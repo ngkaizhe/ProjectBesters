@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import (QWidget, QPushButton,
-                             QHBoxLayout, QVBoxLayout, QApplication, QSizePolicy)
+from PyQt5.QtWidgets import (QWidget, QPushButton, QGridLayout, QLabel,
+                             QPlainTextEdit, QHBoxLayout, QVBoxLayout,
+                             QApplication, QSizePolicy)
 import sys
 import os
 
@@ -12,6 +13,9 @@ class UI(QWidget):
         self.initUI()
 
     def initUI(self):
+        grid_layout = QGridLayout()
+        self.setLayout(grid_layout)
+
         okButton = QPushButton("open")
         okButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -28,10 +32,32 @@ class UI(QWidget):
         hbox.addWidget(clearButton)
 
         vbox = QVBoxLayout()
-        vbox.addStretch(1)
+        vbox.addWidget(QLabel('Input'))
+        vbox.addWidget(QPlainTextEdit(QWidget().resize(640, 480)))
         vbox.addLayout(hbox)
 
-        self.setLayout(vbox)
+        okButton1 = QPushButton("open")
+        okButton1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        setButton1 = QPushButton("set")
+        setButton1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        clearButton1 = QPushButton("clear")
+        clearButton1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        hbox1 = QHBoxLayout()
+
+        hbox1.addWidget(okButton1)
+        hbox1.addWidget(setButton1)
+        hbox1.addWidget(clearButton1)
+
+        vbox1 = QVBoxLayout()
+        vbox1.addWidget(QLabel('Method Used'))
+        vbox1.addWidget(QPlainTextEdit(QWidget().resize(640, 480)))
+        vbox1.addLayout(hbox1)
+
+        grid_layout.addLayout(vbox, 0, 0)
+        grid_layout.addLayout(vbox1, 0, 1)
 
         self.setGeometry(300, 300, 300, 150)
         self.setWindowTitle('Buttons')
