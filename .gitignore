@@ -51,5 +51,5 @@ wheels/
 *.egg
 
 # test file ignore
-.test.py
+test.py
 
