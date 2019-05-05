@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QGridLayout, QLabel,
                              QApplication, QSizePolicy, QComboBox, QLineEdit,
                              QFileDialog)
 from PyQt5.QtGui import (QResizeEvent, QFont)
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import matplotlib.pyplot as plt
+import numpy as np
 import sys
 import os
 
@@ -33,6 +36,14 @@ class UI(QWidget):
         self.output_textbox: QPlainTextEdit = None
         self.output_output_label: QLabel = None
 
+        self.variable_clear_button: QPushButton = None
+        self.variable_textbox: QPlainTextEdit = None
+        self.variable_variable_label: QLabel = None
+
+        # graph part with self.figure variables
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+
         self.grid_layout: QGridLayout = None
 
         self.open_file_location: str = os.path.dirname(os.path.abspath(__file__))
@@ -49,12 +60,15 @@ class UI(QWidget):
         self.setLayout(self.grid_layout)
         self.grid_layout.setHorizontalSpacing(50)
 
-        # create 3 blocks
+        # create 5 blocks
         self.create_input_block()
         self.create_method_used_block()
         self.create_output_block()
+        self.create_variable_block()
+        self.create_graph_block()
 
-        self.setGeometry(500, 300, 300, 300)
+        self.setGeometry(400, 300, 1000, 500)
+        self.setMinimumSize(1000, 500)
         self.setWindowTitle('Project2-Optimization')
 
         self.width = self.frameGeometry().width()
@@ -155,7 +169,44 @@ class UI(QWidget):
         output_v_box.addWidget(self.output_textbox)
 
         output_v_box.addLayout(output_h_box)
-        self.grid_layout.addLayout(output_v_box, 1, 0, 1, 2)
+        self.grid_layout.addLayout(output_v_box, 1, 0)
+
+    def create_variable_block(self):
+
+        self.variable_clear_button = QPushButton("clear")
+        self.variable_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        self.variable_variable_label = QLabel('Variables:')
+
+        self.variable_textbox = QPlainTextEdit(QWidget().resize(640, 480))
+        self.variable_textbox.setReadOnly(True)
+
+        output_v_box = QVBoxLayout()
+        output_v_box.addWidget(self.variable_variable_label)
+        output_v_box.addWidget(self.variable_textbox)
+        output_v_box.addWidget(self.variable_clear_button)
+
+        self.grid_layout.addLayout(output_v_box, 1, 1)
+
+    def create_graph_block(self):
+        ''' plot some random stuff '''
+        self.figure.suptitle('Graph')
+
+        # original graph
+        x = np.arange(0, 4, 0.1)
+        ax = self.figure.add_subplot(111)
+        ax.plot(x, x**2, 'black', label='normal')
+
+        # special graph
+        ax.plot(x, x, 'red', label='powell\'s method')
+
+        self.figure.legend()
+        self.canvas.draw()
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.canvas)
+
+        self.grid_layout.addLayout(hbox, 0, 2, 2, 2)
 
     def open_file_dialog(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open file", self.open_file_location, "Text Files (*.txt)")
@@ -180,9 +231,6 @@ class UI(QWidget):
 
             self.output_textbox.clear()
 
-    def update(self) -> None:
-        self.input_textbox.setPlainText('update called')
-
     def resizeEvent(self, a0: QResizeEvent) -> None:
         HeightIncreasement = self.frameGeometry().height() - self.height
         temp_size = 30
@@ -202,6 +250,8 @@ class UI(QWidget):
             self.change_font(self.output_save_button, HeightIncreasement / temp_size)
             self.change_font(self.output_clear_button, HeightIncreasement / temp_size)
             self.change_font(self.method_combobox, HeightIncreasement / temp_size)
+            self.change_font(self.variable_variable_label, HeightIncreasement / temp_size)
+            self.change_font(self.variable_clear_button, HeightIncreasement / temp_size)
 
             self.width = self.frameGeometry().width()
             self.height = self.frameGeometry().height()
@@ -212,6 +262,7 @@ class UI(QWidget):
         font.setPointSize(font.pointSize() + increasement)
         if font.pointSize() > 8:
             label.setFont(font)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
