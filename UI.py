@@ -42,8 +42,13 @@ class UI(QWidget):
         self.variable_variable_label: QLabel = None
 
         # graph part with self.figure variables
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
+        # 3d
+        self.figure1 = plt.figure()
+        self.canvas1 = FigureCanvas(self.figure1)
+
+        # 2d
+        self.figure2 = plt.figure()
+        self.canvas2 = FigureCanvas(self.figure2)
 
         self.grid_layout: QGridLayout = None
 
@@ -68,8 +73,8 @@ class UI(QWidget):
         self.create_variable_block()
         self.create_graph_block()
 
-        self.setGeometry(400, 300, 1000, 500)
-        self.setMinimumSize(1000, 500)
+        self.setGeometry(170, 300, 1600, 500)
+        self.setMinimumSize(1600, 500)
         self.setWindowTitle('Project2-Optimization')
 
         self.width = self.frameGeometry().width()
@@ -191,27 +196,36 @@ class UI(QWidget):
 
     def create_graph_block(self):
         ''' plot some random stuff '''
-        self.figure.suptitle('Graph')
+        self.figure1.suptitle('3d')
+        self.figure2.suptitle('2d')
 
-        # original graph
-        x = np.arange(0, 4, 0.1)
-        ax = self.figure.add_subplot(111, projection='3d')
-        ax.plot(x, x**2, x*2, 'black', label='normal')
+        ax1 = self.figure1.add_subplot(111, projection='3d')
+        x = y = np.arange(-3.0, 3.0, 0.05)
+        X, Y = np.meshgrid(x, y)
+        zs = np.array(X**2 + Y**2)
+        Z = zs.reshape(X.shape)
+        ax1.plot_surface(X, Y, Z)
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('y')
+        ax1.set_zlabel('z')
 
-        # special graph
-        ax.plot(x, x, x*2, 'red', label='powell\'s method')
+        ax2 = self.figure2.add_subplot(111)
+        ax2.contour(X, Y, Z)
+        ax2.set_xlabel('x')
+        ax2.set_ylabel('y')
 
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        ax.set_zlabel('z')
+        self.canvas1.draw()
+        self.canvas2.draw()
+        # self.figure2.legend()
 
-        self.figure.legend()
-        self.canvas.draw()
+        hbox1 = QHBoxLayout()
+        hbox2 = QHBoxLayout()
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.canvas)
+        hbox1.addWidget(self.canvas1)
+        hbox2.addWidget(self.canvas2)
 
-        self.grid_layout.addLayout(hbox, 0, 2, 2, 2)
+        self.grid_layout.addLayout(hbox1, 0, 2, 2, 1)
+        self.grid_layout.addLayout(hbox2, 0, 3, 2, 1)
 
     def open_file_dialog(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open file", self.open_file_location, "Text Files (*.txt)")
