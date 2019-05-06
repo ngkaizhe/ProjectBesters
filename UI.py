@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QGridLayout, QLabel,
 from PyQt5.QtGui import (QResizeEvent, QFont)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import sys
 import os
@@ -194,11 +195,15 @@ class UI(QWidget):
 
         # original graph
         x = np.arange(0, 4, 0.1)
-        ax = self.figure.add_subplot(111)
-        ax.plot(x, x**2, 'black', label='normal')
+        ax = self.figure.add_subplot(111, projection='3d')
+        ax.plot(x, x**2, x*2, 'black', label='normal')
 
         # special graph
-        ax.plot(x, x, 'red', label='powell\'s method')
+        ax.plot(x, x, x*2, 'red', label='powell\'s method')
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
 
         self.figure.legend()
         self.canvas.draw()
