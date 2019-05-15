@@ -48,6 +48,7 @@ class AddOp(Op):
                 node.inputs[0].diff_form, node.inputs[1].diff_form)
         return
 
+
 class SubOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
         new_node = Op.__call__()
@@ -63,9 +64,9 @@ class SubOp(Op):
         if node.inputs[1].diff_form == '0' and node.inputs[0].diff_form == '0':
             node.diff_form = "0"
         elif node.inputs[1].diff_form == '0':
-            node.diff_form = "%s" %node.inputs[0].diff_form
+            node.diff_form = "%s" % node.inputs[0].diff_form
         elif node.inputs[0].diff_form == '0':
-            node.diff_form = "%s" %node.inputs[1].diff_form
+            node.diff_form = "-%s" % node.inputs[1].diff_form
         else:
             node.diff_form = "%s-%s" % (
             node.inputs[0].diff_form, node.inputs[1].diff_form)
@@ -88,12 +89,39 @@ class MulOp(Op):
             node.diff_form = "0"
         elif node.inputs[1].diff_form == '0':
             node.diff_form = "%s*%s" % (
-            node.inputs[1].normal_form, node.inputs[0].diff_form)
+                node.inputs[1].normal_form, node.inputs[0].diff_form)
         elif node.inputs[0].diff_form == '0':
             node.diff_form = "%s*%s" % (
-            node.inputs[0].normal_form, node.inputs[1].diff_form)
+                node.inputs[0].normal_form, node.inputs[1].diff_form)
         else:
             node.diff_form = "%s*%s+%s*%s" %(node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[1].diff_form)
+        return
+
+
+class DivOp(Op):
+
+    def __call__(self, node_A: Node, node_B: Node):
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A, node_B]
+        new_node.normal_form = "%s/%s" % (node_A.normal_form, node_B.normal_form)
+        return new_node
+
+    def compute(self, node, input_vals):
+        assert len(input_vals) == 2
+        return input_vals[0] / input_vals[1]
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[1].diff_form == '0' and node.inputs[0].diff_form == '0':
+            node.diff_form = "0"
+        elif node.inputs[1].diff_form == '0':
+            node.diff_form = "(%s*%s)/(%s^2)" % (
+                node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[1].normal_form)
+        elif node.inputs[0].diff_form == '0':
+            node.diff_form = "(-%s*%s)/(%s^2)" % (
+                node.inputs[0].normal_form, node.inputs[1].diff_form, node.inputs[1].normal_form)
+        else:
+            node.diff_form = "(%s*%s-%s*%s)/(%s^2)" %(
+                node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[1].diff_form, node.inputs[1].normal_form)
         return
 
 
@@ -112,7 +140,7 @@ class PowOp(Op):
     def diff(self, node: Node, variable: str) -> None:
         if variable == node.inputs[0].normal_form:
             if node.const_attr == 2:
-                node.diff_form = "2*%s" %node.inputs[0].normal_form
+                node.diff_form = "2*%s" % node.inputs[0].normal_form
             else:
                 node.diff_form = "%s*%s^%s" % (node.const_attr, node.inputs[0].normal_form, node.const_attr - 1)
         else:
@@ -161,9 +189,9 @@ class SubConstOp(Op):
             node.diff_form = '0'
         else:
             if node.const_attr[1] == 0:
-                node.diff_form = "%s" %node.inputs[0].diff_form
+                node.diff_form = "%s" % node.inputs[0].diff_form
             elif node.const_attr[1] == 1:
-                node.diff_form = "-%s" %node.inputs[1].diff_form
+                node.diff_form = "-%s" % node.inputs[1].diff_form
 
 class MulConstOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
@@ -182,7 +210,7 @@ class MulConstOp(Op):
             node.diff_form = "0"
         else:
             node.diff_form = "%s*%s" % (
-            node.inputs[0].normal_form, node.inputs[1].diff_form)
+                node.inputs[0].normal_form, node.inputs[1].diff_form)
         return
 
 
@@ -242,7 +270,7 @@ class SinOp(Op):
         if node.inputs[0].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "%s*cos(%s)" %(
+            node.diff_form = "%s*cos(%s)" % (
                 node.inputs[0].diff_form, node.inputs[0].normal_form)
         return
 
@@ -263,10 +291,6 @@ class CosOp(Op):
         if node.inputs[0].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "-%s*sin(%s)" %(
+            node.diff_form = "-%s*sin(%s)" % (
                 node.inputs[0].diff_form, node.inputs[0].normal_form)
         return
-
-
-if __name__ == '__main__':
-    print('testing')
