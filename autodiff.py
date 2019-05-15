@@ -114,7 +114,7 @@ class PowOp(Op):
             else:
                 node.diff_form = "%s*%s^%s" % (node.const_attr, node.inputs[0].normal_form, node.const_attr - 1)
         else:
-            node.diff_form = 0
+            node.diff_form = '0'
         return
 
 
@@ -154,13 +154,14 @@ class SubConstOp(Op):
         assert len(input_vals) == 1
         return node.const_attr - input_vals[0]
 
-#TODO: unary operator ex: (1-x) diff form should be '-1'
     def diff(self, node: Node, variable: str) -> None:
         if node.inputs[node.const_attr[1]].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "%s" % node.inputs[node.const_attr[1]].diff_form
-
+            if node.const_attr[1] == 0:
+                node.diff_form = "%s" %node.inputs[0].diff_form
+            elif node.const_attr[1] == 1:
+                node.diff_form = "-%s" %node.inputs[1].diff_form
 
 class MulConstOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
@@ -174,6 +175,14 @@ class MulConstOp(Op):
         assert len(input_vals) == 1
         return node.const_attr * input_vals[0]
 
+    def diff(self, node: Node) -> None:
+        if node.inputs[1].diff_form == '0':
+            node.diff_form = "0"
+        else:
+            node.diff_form = "%s*%s" % (
+            node.inputs[0].normal_form, node.inputs[1].diff_form)
+        return
+
 
 class PlaceholderOp(Op):
     def __call__(self, var_string: str) -> Node:
@@ -185,6 +194,13 @@ class PlaceholderOp(Op):
     def compute(self, node: Node, input_vals: list) -> float:
         assert len(input_vals) == 1
         return input_vals[0]
+
+    def diff(self, node: Node, variable: str) -> None:
+        if variable == node.normal_form:
+            node.diff_form = '1'
+        else:
+            node.diff_form = '0'
+        return
 
 
 class ConstOp(Op):
@@ -198,19 +214,9 @@ class ConstOp(Op):
     def compute(self, node: Node) -> float:
         return node.const_attr
 
-
-class Executor(object):
-    def __init__(self, equation: str):
-        self.node_list: List[Node] = []
-        self.equation = equation
-        self.BuildNodeList()
-
-    # for testing purpose to checking whether the node was build correctly
-    def GetEquation(self):
-        return self.node_list[-1].normal_form
-
-    def BuildNodeList(self) -> None:
-
+    def diff(self, node: Node, variable: str) -> None:
+        node.diff_form = '0'
+        return
 
 
 if __name__ == '__main__':
