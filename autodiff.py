@@ -1,4 +1,6 @@
 from typing import List
+from math import sin, cos
+
 
 class Node(object):
     def __init__(self):
@@ -216,6 +218,53 @@ class ConstOp(Op):
 
     def diff(self, node: Node, variable: str) -> None:
         node.diff_form = '0'
+        return
+
+
+"""
+sinOp and cosOp part
+"""
+
+
+class SinOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__()
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "sin(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return sin(input_vals[0])
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "%s*cos(%s)" %(
+                node.inputs[0].diff_form, node.inputs[0].normal_form)
+        return
+
+
+class CosOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__()
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "cos(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return sin(input_vals[0])
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "-%s*sin(%s)" %(
+                node.inputs[0].diff_form, node.inputs[0].normal_form)
         return
 
 
