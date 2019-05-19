@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QPushButton, QGridLayout, QLabel,
                              QPlainTextEdit, QHBoxLayout, QVBoxLayout,
                              QApplication, QSizePolicy, QComboBox, QLineEdit,
-                             QFileDialog)
+                             QFileDialog, QListWidget)
 from PyQt5.QtGui import (QResizeEvent, QFont)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -9,6 +9,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import sys
 import os
+from Manager import Manager, Methods
+import re
+from typing import List
 
 
 class UI(QWidget):
@@ -19,27 +22,19 @@ class UI(QWidget):
 
         self.input_open_button: QPushButton = None
         self.input_clear_button: QPushButton = None
-        self.input_set_button: QPushButton = None
-        self.input_textbox: QPlainTextEdit = None
+        self.input_list: QListWidget = None
         self.input_input_label: QLabel = None
 
         self.method_calculate_button: QPushButton = None
         self.method_reset_button: QPushButton = None
         self.method_combobox: QComboBox = None
-        self.method_min_range: QLineEdit = None
-        self.method_max_range: QLineEdit = None
         self.method_method_used_label: QLabel = None
-        self.method_range_label: QLabel = None
-        self.method_dash_label: QLabel = None
+        self.method_intial_interval_textbox: QPlainTextEdit = None
 
         self.output_save_button: QPushButton = None
         self.output_clear_button: QPushButton = None
         self.output_textbox: QPlainTextEdit = None
         self.output_output_label: QLabel = None
-
-        self.variable_clear_button: QPushButton = None
-        self.variable_textbox: QPlainTextEdit = None
-        self.variable_variable_label: QLabel = None
 
         # graph part with self.figure variables
         # 3d
@@ -55,11 +50,9 @@ class UI(QWidget):
         self.open_file_location: str = os.path.dirname(os.path.abspath(__file__))
         self.save_file_location: str = os.path.dirname(os.path.abspath(__file__))
 
-        self.methods = ["None----", "Powell's Method", "Newton Method", "Steep Descent Algorithm",
-                        "Quasi-Newton Method", "Conjugate Gradient Methods"]
+        self.methods = list(Methods.keys())
 
         self.initUI()
-
 
     def initUI(self):
         self.grid_layout = QGridLayout()
@@ -70,7 +63,6 @@ class UI(QWidget):
         self.create_input_block()
         self.create_method_used_block()
         self.create_output_block()
-        self.create_variable_block()
         self.create_graph_block()
 
         self.setGeometry(170, 300, 1600, 500)
@@ -87,24 +79,22 @@ class UI(QWidget):
         self.input_open_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.input_open_button.clicked.connect(self.open_file_dialog)
 
-        self.input_set_button = QPushButton("set")
-        self.input_set_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
         self.input_clear_button = QPushButton("clear")
         self.input_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.input_clear_button.clicked.connect(self.input_clear)
 
         self.input_input_label = QLabel('Input:')
 
         input_h_box = QHBoxLayout()
         input_h_box.addWidget(self.input_open_button)
-        input_h_box.addWidget(self.input_set_button)
+        input_h_box.addSpacing(50)
         input_h_box.addWidget(self.input_clear_button)
 
-        self.input_textbox = QPlainTextEdit(QWidget().resize(640, 480))
+        self.input_list = QListWidget()
 
         input_v_box = QVBoxLayout()
         input_v_box.addWidget(self.input_input_label)
-        input_v_box.addWidget(self.input_textbox)
+        input_v_box.addWidget(self.input_list)
 
         input_v_box.addLayout(input_h_box)
         self.grid_layout.addLayout(input_v_box, 0, 0)
@@ -117,28 +107,16 @@ class UI(QWidget):
         # Buttons to be used
         self.method_reset_button = QPushButton("reset")
         self.method_reset_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.method_reset_button.clicked.connect(self.method_reset)
+
         self.method_calculate_button = QPushButton("calculate")
         self.method_calculate_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        # Range textbox to be used
-        self.method_min_range = QLineEdit(self)
-        self.method_min_range.setFixedSize(70, 20)
-        self.method_max_range = QLineEdit(self)
-        self.method_max_range.setFixedSize(70, 20)
+        self.method_calculate_button.clicked.connect(self.method_calculate)
 
         # Qlabel to be used
         self.method_method_used_label = QLabel('Method Used:')
-        self.method_range_label = QLabel('Range:')
-        self.method_dash_label = QLabel('~')
 
-        method_h1_box = QHBoxLayout()
-        method_h1_box.addStretch(1)
-        method_h1_box.addWidget(self.method_min_range)
-        method_h1_box.addStretch(1)
-        method_h1_box.addWidget(self.method_dash_label)
-        method_h1_box.addStretch(1)
-        method_h1_box.addWidget(self.method_max_range)
-        method_h1_box.addStretch(1)
+        self.method_intial_interval_textbox = QPlainTextEdit()
 
         method_h2_box = QHBoxLayout()
         method_h2_box.addWidget(self.method_reset_button)
@@ -147,9 +125,8 @@ class UI(QWidget):
         method_v_box = QVBoxLayout()
         method_v_box.addWidget(self.method_method_used_label)
         method_v_box.addWidget(self.method_combobox)
-        method_v_box.addWidget(self.method_range_label)
+        method_v_box.addWidget(self.method_intial_interval_textbox)
 
-        method_v_box.addLayout(method_h1_box)
         method_v_box.addLayout(method_h2_box)
         self.grid_layout.addLayout(method_v_box, 0, 1)
 
@@ -175,7 +152,7 @@ class UI(QWidget):
         output_v_box.addWidget(self.output_textbox)
 
         output_v_box.addLayout(output_h_box)
-        self.grid_layout.addLayout(output_v_box, 1, 0)
+        self.grid_layout.addLayout(output_v_box, 1, 0, 1, 2)
 
     def create_variable_block(self):
 
@@ -234,9 +211,10 @@ class UI(QWidget):
             self.open_file_location = filename[: temp_pos + 1]
 
         if filename:
-            with open(filename, 'r') as file:
+            with open(filename, 'r', encoding='utf8') as file:
                 read_data = file.read()
-            self.input_textbox.setPlainText(read_data)
+                read_data_list = read_data.splitlines()
+                self.input_list.addItems(read_data_list)
 
     def save_file_dialog(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Save File", self.save_file_location,
@@ -250,6 +228,28 @@ class UI(QWidget):
 
             self.output_textbox.clear()
 
+    def input_clear(self):
+        self.input_list.clear()
+
+    def method_reset(self):
+        self.method_intial_interval_textbox.setPlainText('')
+        self.method_combobox.setCurrentIndex(0)
+
+    def method_calculate(self):
+        initial_interval = self.method_intial_interval_textbox.toPlainText()
+        method = self.method_combobox.currentText()
+        equation_str = self.input_list.currentItem()
+
+        if equation_str is None or method == 'None----' or initial_interval == '':
+            assert False
+
+        equation_str = equation_str.text()
+        # get initial point and intervals
+        initial_point, intervals = get_ip_intervals(initial_interval)
+
+        manager = Manager(equation_str, method, initial_point, intervals)
+        manager.run()
+
     def resizeEvent(self, a0: QResizeEvent) -> None:
         HeightIncreasement = self.frameGeometry().height() - self.height
         temp_size = 30
@@ -257,20 +257,15 @@ class UI(QWidget):
         if abs(HeightIncreasement) - temp_size >= 0:
             # no pointer could be used in python
             self.change_font(self.input_input_label, HeightIncreasement / temp_size)
-            self.change_font(self.method_range_label, HeightIncreasement / temp_size)
             self.change_font(self.method_method_used_label, HeightIncreasement / temp_size)
             self.change_font(self.output_output_label, HeightIncreasement / temp_size)
-            self.change_font(self.method_dash_label, HeightIncreasement / temp_size)
             self.change_font(self.input_open_button, HeightIncreasement / temp_size)
-            self.change_font(self.input_set_button, HeightIncreasement / temp_size)
             self.change_font(self.input_clear_button, HeightIncreasement / temp_size)
             self.change_font(self.method_calculate_button, HeightIncreasement / temp_size)
             self.change_font(self.method_reset_button, HeightIncreasement / temp_size)
             self.change_font(self.output_save_button, HeightIncreasement / temp_size)
             self.change_font(self.output_clear_button, HeightIncreasement / temp_size)
             self.change_font(self.method_combobox, HeightIncreasement / temp_size)
-            self.change_font(self.variable_variable_label, HeightIncreasement / temp_size)
-            self.change_font(self.variable_clear_button, HeightIncreasement / temp_size)
 
             self.width = self.frameGeometry().width()
             self.height = self.frameGeometry().height()
@@ -281,6 +276,31 @@ class UI(QWidget):
         font.setPointSize(font.pointSize() + increasement)
         if font.pointSize() > 8:
             label.setFont(font)
+
+
+def get_ip_intervals(initial_interval: str):
+    initial_interval = initial_interval.split('\n', 1)
+
+    # initial point parts
+    initial_point_list = re.split(r'[:=]', initial_interval[0].replace(" ", ""))
+    # now initial_point_list contains 3 elements, which is 'initial' , [var..], [initial_point..]
+    vars = re.findall(r'\w', initial_point_list[1])
+    initial_point = list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', initial_point_list[2]))
+
+    # interval parts
+    intervals = []
+    interval_list = initial_interval[1].splitlines()
+
+    for i in range(len(vars)):
+        intervals.append(list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', interval_list[i+1])))
+
+    return initial_point, intervals
+
+
+def list_string_float(string_list: List[str]):
+    for i in range(len(string_list)):
+        string_list[i] = float(string_list[i])
+    return string_list
 
 
 if __name__ == '__main__':
