@@ -2,11 +2,11 @@ from method.TestEquation import TestingEquation as Equation
 from math import sqrt
 
 
-error_value = 0.00000001
+error_value = 0.0000001
 GR = float(sqrt(5) - 1) / 2
 
 
-def golden_section(lower_bound: float, upper_bound: float, equation: Equation) -> float:
+def golden_section(lower_bound: float, upper_bound: float, equation: Equation, p: list, vector: list) -> float:
     a = lower_bound
     b = upper_bound
     func = equation.compute
@@ -16,8 +16,14 @@ def golden_section(lower_bound: float, upper_bound: float, equation: Equation) -
     N = 0
 
     while abs(x1 - x2) > error_value and N < 100000:
-        f1 = func([x1])
-        f2 = func([x2])
+        parameter_list = []
+        for i in range(equation.total_var):
+            parameter_list.append(p[i] + x1 * vector[i])
+        f1 = func(parameter_list)
+        parameter_list = []
+        for i in range(equation.total_var):
+            parameter_list.append(p[i] + x2 * vector[i])
+        f2 = func(parameter_list)
 
         if f1 < f2:
             a = x2
@@ -34,4 +40,4 @@ def golden_section(lower_bound: float, upper_bound: float, equation: Equation) -
 
 
 if __name__ == '__main__':
-    print(golden_section(0, 1, Equation()))
+    pass
