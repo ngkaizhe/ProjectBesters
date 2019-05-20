@@ -1,5 +1,6 @@
 from typing import List
 from math import sin, cos
+from decimal import Decimal
 
 
 class Node(object):
@@ -9,7 +10,6 @@ class Node(object):
         self.const_attr = None
         self.normal_form = ''
         self.diff_form = ''
-
 
 # operator inheritance, blank class
 class Op(object):
@@ -25,9 +25,61 @@ class Op(object):
         assert False, 'Implemented in subclass!'
 
 
+class PlaceholderOp(Op):
+    def __call__(self, var_string: str) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = None
+        new_node.normal_form = var_string
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return input_vals[0]
+
+    def diff(self, node: Node, variable: str) -> None:
+        if variable == node.normal_form:
+            node.diff_form = '1'
+        else:
+            node.diff_form = '0'
+        return
+
+class ConstOp(Op):
+    def __call__(self, number: float) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = None
+        new_node.const_attr = Decimal(number)
+        new_node.normal_form = str(number)
+        return new_node
+
+    def compute(self, node: Node) -> float:
+        return node.const_attr
+
+    def diff(self, node: Node, variable: str) -> None:
+        node.diff_form = '0'
+        return
+
+class NegOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node]
+        new_node.normal_form = "-(%s)" % (node.normal_form)
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return -input_vals[0]
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "-(%s)" % (node.diff_form)
+        return
+
+
 class AddOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node_A, node_B]
         new_node.normal_form = "%s+%s" % (node_A.normal_form, node_B.normal_form)
         return new_node
@@ -51,9 +103,9 @@ class AddOp(Op):
 
 class SubOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node_A, node_B]
-        new_node.normal_form = "%s-%s" % (node_A.normal_form, node_B.normal_form)
+        new_node.normal_form = "%s-(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node: Node, input_vals: list) -> float:
@@ -66,18 +118,18 @@ class SubOp(Op):
         elif node.inputs[1].diff_form == '0':
             node.diff_form = "%s" % node.inputs[0].diff_form
         elif node.inputs[0].diff_form == '0':
-            node.diff_form = "-%s" % node.inputs[1].diff_form
+            node.diff_form = "-(%s)" % node.inputs[1].diff_form
         else:
-            node.diff_form = "%s-%s" % (
+            node.diff_form = "%s-(%s)" % (
             node.inputs[0].diff_form, node.inputs[1].diff_form)
         return
 
 
 class MulOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node_A, node_B]
-        new_node.normal_form = "%s*%s" % (node_A.normal_form, node_B.normal_form)
+        new_node.normal_form = "(%s)*(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node: Node, input_vals: list) -> float:
@@ -88,13 +140,12 @@ class MulOp(Op):
         if node.inputs[1].diff_form == '0' and node.inputs[0].diff_form == '0':
             node.diff_form = "0"
         elif node.inputs[1].diff_form == '0':
-            node.diff_form = "%s*%s" % (
-                node.inputs[1].normal_form, node.inputs[0].diff_form)
+            node.diff_form = "(%s)*(%s)" % (node.inputs[1].normal_form, node.inputs[0].diff_form)
         elif node.inputs[0].diff_form == '0':
-            node.diff_form = "%s*%s" % (
-                node.inputs[0].normal_form, node.inputs[1].diff_form)
+            node.diff_form = "(%s)*(%s)" % (node.inputs[0].normal_form, node.inputs[1].diff_form)
         else:
-            node.diff_form = "%s*%s+%s*%s" %(node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[1].diff_form)
+            node.diff_form = "(%s)*(%s)+(%s)*(%s)" \
+             %(node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[1].diff_form)
         return
 
 
@@ -103,7 +154,7 @@ class DivOp(Op):
     def __call__(self, node_A: Node, node_B: Node):
         new_node = Op.__call__(self)
         new_node.inputs = [node_A, node_B]
-        new_node.normal_form = "%s/%s" % (node_A.normal_form, node_B.normal_form)
+        new_node.normal_form = "(%s)/(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node, input_vals):
@@ -114,35 +165,35 @@ class DivOp(Op):
         if node.inputs[1].diff_form == '0' and node.inputs[0].diff_form == '0':
             node.diff_form = "0"
         elif node.inputs[1].diff_form == '0':
-            node.diff_form = "(%s*%s)/(%s^2)" % (
+            node.diff_form = "((%s)*(%s))/(%s)^2" % (
                 node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[1].normal_form)
         elif node.inputs[0].diff_form == '0':
-            node.diff_form = "(-%s*%s)/(%s^2)" % (
+            node.diff_form = "(-(%s)*(%s))/(%s)^2)" % (
                 node.inputs[0].normal_form, node.inputs[1].diff_form, node.inputs[1].normal_form)
         else:
-            node.diff_form = "(%s*%s-%s*%s)/(%s^2)" %(
+            node.diff_form = "(%s)*(%s)-(%s)*(%s))/(%s)^2)" %(
                 node.inputs[1].normal_form, node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[1].diff_form, node.inputs[1].normal_form)
         return
 
 
 class PowOp(Op):
-    def __call__(self, node_A: Node, pow: float) -> Node:
-        new_node = Op.__call__()
-        new_node.inputs = [node_A]
-        new_node.const_attr = pow
-        new_node.normal_form = "%s^%s" % (node_A.normal_form, str(pow))
+    def __call__(self, node_A: Node, node_B: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node_A, node_B]
+        new_node.normal_form = "(%s)^(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node: Node, input_vals: list) -> float:
-        assert isinstance(node, Node) and len(input_vals) == 1
-        return pow(input_vals, node.const_attr)
+        assert node.inputs[1].op == const_op
+        assert len(input_vals) == 1
+        return pow(input_vals, node.inputs[1].const_attr)
 
     def diff(self, node: Node, variable: str) -> None:
         if variable == node.inputs[0].normal_form:
             if node.const_attr == 2:
-                node.diff_form = "2*%s" % node.inputs[0].normal_form
+                node.diff_form = "2*(%s)" % node.inputs[0].normal_form
             else:
-                node.diff_form = "%s*%s^%s" % (node.const_attr, node.inputs[0].normal_form, node.const_attr - 1)
+                node.diff_form = "(%s)*(%s)^((%s)-1)" % (node.inputs[1].normal_form, node.inputs[0].normal_form, node.inputs[1].normal_form)
         else:
             node.diff_form = '0'
         return
@@ -155,7 +206,7 @@ class PowOp(Op):
 # 1: const - var
 class AddConstOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node_A, node_B]
         new_node.const_attr = [node_A.const_attr if node_A.const_attr is not None else node_B.const_attr, 1 if node_A.const_attr is not None else 0]
         new_node.normal_form = "%s+%s" % (node_A.normal_form, node_B.normal_form)
@@ -177,7 +228,7 @@ class SubConstOp(Op):
         new_node = Op.__call__()
         new_node.inputs = [node_A, node_B]
         new_node.const_attr = [node_A.const_attr if node_A.const_attr is not None else node_B.const_attr, 1 if node_A.const_attr is not None else 0]
-        new_node.normal_form = "%s-%s" % (node_A.normal_form, node_B.normal_form)
+        new_node.normal_form = "%s-(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node: Node, input_vals: list) -> float:
@@ -191,14 +242,14 @@ class SubConstOp(Op):
             if node.const_attr[1] == 0:
                 node.diff_form = "%s" % node.inputs[0].diff_form
             elif node.const_attr[1] == 1:
-                node.diff_form = "-%s" % node.inputs[1].diff_form
+                node.diff_form = "-(%s)" % node.inputs[1].diff_form
 
 class MulConstOp(Op):
     def __call__(self, node_A: Node, node_B: Node) -> Node:
         new_node = Op.__call__()
         new_node.inputs = [node_A, node_B]
         new_node.const_attr = node_A.const_attr
-        new_node.normal_form = "%s*%s" % (node_A.normal_form, node_B.normal_form)
+        new_node.normal_form = "(%s)*(%s)" % (node_A.normal_form, node_B.normal_form)
         return new_node
 
     def compute(self, node: Node, input_vals: list) -> float:
@@ -209,43 +260,8 @@ class MulConstOp(Op):
         if node.inputs[1].diff_form == '0':
             node.diff_form = "0"
         else:
-            node.diff_form = "%s*%s" % (
+            node.diff_form = "(%s)*(%s)" % (
                 node.inputs[0].normal_form, node.inputs[1].diff_form)
-        return
-
-
-class PlaceholderOp(Op):
-    def __call__(self, var_string: str) -> Node:
-        new_node = Op.__call__()
-        new_node.inputs = None
-        new_node.normal_form = var_string
-        return new_node
-
-    def compute(self, node: Node, input_vals: list) -> float:
-        assert len(input_vals) == 1
-        return input_vals[0]
-
-    def diff(self, node: Node, variable: str) -> None:
-        if variable == node.normal_form:
-            node.diff_form = '1'
-        else:
-            node.diff_form = '0'
-        return
-
-
-class ConstOp(Op):
-    def __call__(self, number: float) -> Node:
-        new_node = Op.__call__()
-        new_node.inputs = None
-        new_node.const_attr = number
-        new_node.normal_form = str(number)
-        return new_node
-
-    def compute(self, node: Node) -> float:
-        return node.const_attr
-
-    def diff(self, node: Node, variable: str) -> None:
-        node.diff_form = '0'
         return
 
 
@@ -256,7 +272,7 @@ sinOp and cosOp part
 
 class SinOp(Op):
     def __call__(self, node: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node]
         new_node.const_attr = 0
         new_node.normal_form = "sin(%s)" % node.normal_form
@@ -270,14 +286,14 @@ class SinOp(Op):
         if node.inputs[0].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "%s*cos(%s)" % (
+            node.diff_form = "(%s)*cos(%s)" % (
                 node.inputs[0].diff_form, node.inputs[0].normal_form)
         return
 
 
 class CosOp(Op):
     def __call__(self, node: Node) -> Node:
-        new_node = Op.__call__()
+        new_node = Op.__call__(self)
         new_node.inputs = [node]
         new_node.const_attr = 0
         new_node.normal_form = "cos(%s)" % node.normal_form
@@ -285,12 +301,26 @@ class CosOp(Op):
 
     def compute(self, node: Node, input_vals: list) -> float:
         assert len(input_vals) == 1
-        return sin(input_vals[0])
+        return cos(input_vals[0])
 
     def diff(self, node: Node, variable: str) -> None:
         if node.inputs[0].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "-%s*sin(%s)" % (
+            node.diff_form = "-(%s)*sin(%s)" % (
                 node.inputs[0].diff_form, node.inputs[0].normal_form)
         return
+
+add_op = AddOp()
+sub_op = SubOp()
+mul_op = MulOp()
+div_op = DivOp()
+pow_op = PowOp()
+sin_op = SinOp()
+cos_op = CosOp()
+neg_op = NegOp()
+placeholder_op = PlaceholderOp()
+const_op = ConstOp()
+
+
+
