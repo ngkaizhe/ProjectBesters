@@ -6,7 +6,6 @@ from Equation import Equation
 from Exception.explosion import Explosion
 from decimal import Decimal
 
-
 maximum_value = 99999999
 minimum_value = -99999999
 error_value = 0.0000001
@@ -27,6 +26,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
     # total iteration
     N = 100
     X = Arrai([initial_point])
+    every_point = [initial_point]
     S = Arrai.identity((total_var, total_var))
 
     # build dict
@@ -51,6 +51,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
 
             vars_dict = build_var_dict(vars_form, P[j+1])
             answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' % (i, j, alphas[0][j], P[j+1], equation.eval_normal_form(vars_dict)))
+            every_point.append(P[j+1])
 
         # The new displacement vector(summation alphas[i]*S[i] from 0 to total_var-1) becomes a new search vector
         sn = Arrai(P[total_var]) - Arrai(P[0])
@@ -72,16 +73,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
     # build dict
     vars_dict = build_var_dict(vars_form, X[len(X)-1])
     answer += ('Last loop: f(%s)= %s\n\n' % (X[len(X)-1], equation.eval_normal_form(vars_dict)))
-    return answer, X
-
-
-# get magnitude
-def mag(vector: List[float]):
-    total = 0
-    for i in vector:
-        total += i*i
-
-    return Decimal(sqrt(total))
+    return answer, every_point
 
 
 # return the lower_bound and the upper_bound of the alpha
@@ -109,14 +101,18 @@ def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
 
 
 if __name__ == '__main__':
-    print('Q1: x^2+x-2*x^0.5')
-    answer, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
-    print(answer)
+    # print('Q1: x^2+x-2*x^0.5')
+    # answer1, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
+    # print(answer1)
     # print('Q2: sin(3x)+cos(x)')
-    # answer, X = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
-    # print(answer)
+    # answer1, X = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
+    # print(answer1)
     # print('Q2: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
-    # answer, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
-    # print(answer)
+    # answer1, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    # print(answer1)
+    print('Q4: x^2+y^2')
+    answer1, every_point = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    print(answer1)
+    print(every_point)
     pass
 
