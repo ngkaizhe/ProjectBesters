@@ -3,7 +3,7 @@ from enum import Enum
 """
 explosion.py
 
-This is the exception class for arrai
+This is the exception class for method
 
 """
 
@@ -16,5 +16,5 @@ class Explosion(Enum):
 
 
     def bang(self, msg = ""):
-        self.value.args = (self.value.args[0] +'\n' +msg,)
+        self.value.args = (self.value.args[0] +'\n' + msg)
         raise self.value
