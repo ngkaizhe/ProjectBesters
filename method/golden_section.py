@@ -1,15 +1,16 @@
 from math import sqrt
 from Equation import Equation
 from typing import List
+from decimal import Decimal
 
 
 error_value = 0.0000001
-GR = float(sqrt(5) - 1) / 2
+GR = Decimal(sqrt(5) - 1) / 2
 
 
-def golden_section(equation: Equation, vars_form: List[str], lower_bound: float, upper_bound: float, p: list, vector: list) -> float:
-    a = lower_bound
-    b = upper_bound
+def golden_section(equation: Equation, vars_form: List[str], lower_bound: float, upper_bound: float, p: list, vector: list) -> Decimal:
+    a = Decimal(lower_bound)
+    b = Decimal(upper_bound)
     func = equation.eval_normal_form
     total_var = len(vars_form)
     d = GR * (b - a)
@@ -45,7 +46,7 @@ def golden_section(equation: Equation, vars_form: List[str], lower_bound: float,
     return x1
 
 
-def build_var_dict(vars_form: List[str], vars_value: List[float]):
+def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
     vars_dict = {}
     for i in range(len(vars_value)):
         vars_dict[vars_form[i]] = vars_value[i]

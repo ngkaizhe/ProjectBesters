@@ -309,6 +309,9 @@ class Arrai(object):
     def length(self) -> int: # Length of largest array dimension
         return max(self.shape[0], self.shape[1])
 
+    def __len__(self) -> int:
+        return self.shape[0]
+
     def set_row(self, r: int, vec: 'Arrai') -> 'Arrai':
         return set_row(self, r, vec)
 
