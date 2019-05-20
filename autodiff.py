@@ -11,6 +11,61 @@ class Node(object):
         self.normal_form = ''
         self.diff_form = ''
 
+    def __add__(self, other):
+        """Adding two nodes return a new node."""
+        if isinstance(other, Node):
+            if (self.op == const_op and other.op == const_op):
+                new_node = const_op(self.const_attr + other.const_attr)
+            else:
+                new_node = add_op(self, other)
+        else:
+            new_node = add_op(self, const_op(other))
+        return new_node
+
+    def __sub__(self, other):
+        """Adding two nodes return a new node."""
+        if isinstance(other, Node):
+            if (self.op == const_op and other.op == const_op):
+                new_node = const_op(self.const_attr - other.const_attr)
+            else:
+                new_node = sub_op(self, other)
+        else:
+            new_node = sub_op(self, const_op(other))
+        return new_node
+
+    def __mul__(self, other):
+        """Adding two nodes return a new node."""
+        if isinstance(other, Node):
+            if (self.op == const_op and other.op == const_op):
+                new_node = const_op(self.const_attr * other.const_attr)
+            else:
+                new_node = mul_op(self, other)
+        else:
+            new_node = mul_op(self, const_op(other))
+        return new_node
+
+    def __truediv__(self, other):
+        """Adding two nodes return a new node."""
+        if isinstance(other, Node):
+            if (self.op == const_op and other.op == const_op):
+                new_node = const_op(self.const_attr / other.const_attr)
+            else:
+                new_node = div_op(self, other)
+        else:
+            new_node = div_op(self, const_op(other))
+        return new_node
+
+    def __pow__(self, other):
+        """Adding two nodes return a new node."""
+        if isinstance(other, Node):
+            if (self.op == const_op and other.op == const_op):
+                new_node = const_op(self.const_attr ** other.const_attr)
+            else:
+                new_node = pow_op(self, other)
+        else:
+            new_node = pow_op(self, const_op(other))
+        return new_node
+
 # operator inheritance, blank class
 class Op(object):
     def __call__(self):
@@ -185,8 +240,8 @@ class PowOp(Op):
 
     def compute(self, node: Node, input_vals: list) -> float:
         assert node.inputs[1].op == const_op
-        assert len(input_vals) == 1
-        return pow(input_vals, node.inputs[1].const_attr)
+        assert len(input_vals) == 2
+        return Decimal(pow(input_vals[0], input_vals[1]))
 
     def diff(self, node: Node, variable: str) -> None:
         if variable == node.inputs[0].normal_form:
@@ -280,7 +335,7 @@ class SinOp(Op):
 
     def compute(self, node: Node, input_vals: list) -> float:
         assert len(input_vals) == 1
-        return sin(input_vals[0])
+        return Decimal(sin(input_vals[0]))
 
     def diff(self, node: Node, variable: str) -> None:
         if node.inputs[0].diff_form == '0':
@@ -301,7 +356,7 @@ class CosOp(Op):
 
     def compute(self, node: Node, input_vals: list) -> float:
         assert len(input_vals) == 1
-        return cos(input_vals[0])
+        return Decimal(cos(input_vals[0]))
 
     def diff(self, node: Node, variable: str) -> None:
         if node.inputs[0].diff_form == '0':

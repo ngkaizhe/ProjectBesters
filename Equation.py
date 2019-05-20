@@ -277,17 +277,13 @@ class Equation(object):
                 second = node_queue[-1]
                 node_queue.pop(), node_queue.pop()
 
-                are_const = True if (first.op == const_op and second.op == const_op) else False
-
-                if token.type == TokenType.ADD: func = (lambda x,y: x+y) if are_const else add_op
-                elif token.type == TokenType.SUB: func = (lambda x,y: x-y) if are_const else sub_op
-                elif token.type == TokenType.MUL: func = (lambda x,y: x*y) if are_const else mul_op
-                elif token.type == TokenType.DIV: func = (lambda x,y: x/y) if are_const else div_op
-                elif token.type == TokenType.EXP: func = (lambda x,y: x**y) if are_const else pow_op
+                if token.type == TokenType.ADD: node = first + second
+                elif token.type == TokenType.SUB: node = first - second
+                elif token.type == TokenType.MUL: node = first * second
+                elif token.type == TokenType.DIV: node = first / second
+                elif token.type == TokenType.EXP: node = first ** second
                 else: raise ValueError("Unsupported yet")
 
-                if are_const: node = const_op(func(first.const_attr, second.const_attr))
-                else: node = func(first, second)
 
             elif token.type in {TokenType.NEG, TokenType.SIN, TokenType.COS}:
                 if (len(node_queue) < 1): raise ValueError("SyntaxError: mismatched operand.")
@@ -334,7 +330,7 @@ class Equation(object):
         for node in self.topo:
             if node.op is placeholder_op:
                 if node.normal_form in variable_parts:
-                    value_nodes[node] = variable_parts[node.normal_form]
+                    value_nodes[node] = Decimal(variable_parts[node.normal_form])
                 else:
                     value_nodes[node] = 0
             elif node.op is const_op:
@@ -352,8 +348,9 @@ class Equation(object):
         pass
 
 if __name__ == '__main__':
-    b = Equation('x+6^3/y')
+    b = Equation('x^2y^3')
     print(b.root.normal_form)
+    print(b.root.op.diff(b.root, ''))
     print(b.eval_normal_form({'x' : 3, 'y' : 6}))
     b = Equation('x*y/sin(cos x * y)sin(x)sin y + sin z sin a')
     print(b.root.normal_form)
