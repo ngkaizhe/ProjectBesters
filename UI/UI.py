@@ -154,22 +154,22 @@ class UI(QWidget):
         output_v_box.addLayout(output_h_box)
         self.grid_layout.addLayout(output_v_box, 1, 0, 1, 2)
 
-    def create_variable_block(self):
-
-        self.variable_clear_button = QPushButton("clear")
-        self.variable_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        self.variable_variable_label = QLabel('Variables:')
-
-        self.variable_textbox = QPlainTextEdit(QWidget().resize(640, 480))
-        self.variable_textbox.setReadOnly(True)
-
-        output_v_box = QVBoxLayout()
-        output_v_box.addWidget(self.variable_variable_label)
-        output_v_box.addWidget(self.variable_textbox)
-        output_v_box.addWidget(self.variable_clear_button)
-
-        self.grid_layout.addLayout(output_v_box, 1, 1)
+    # def create_variable_block(self):
+    #
+    #     self.variable_clear_button = QPushButton("clear")
+    #     self.variable_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    #
+    #     self.variable_variable_label = QLabel('Variables:')
+    #
+    #     self.variable_textbox = QPlainTextEdit(QWidget().resize(640, 480))
+    #     self.variable_textbox.setReadOnly(True)
+    #
+    #     output_v_box = QVBoxLayout()
+    #     output_v_box.addWidget(self.variable_variable_label)
+    #     output_v_box.addWidget(self.variable_textbox)
+    #     output_v_box.addWidget(self.variable_clear_button)
+    #
+    #     self.grid_layout.addLayout(output_v_box, 1, 1)
 
     def create_graph_block(self):
         ''' plot some random stuff '''
@@ -179,7 +179,7 @@ class UI(QWidget):
         ax1 = self.figure1.add_subplot(111, projection='3d')
         x = y = np.arange(-3.0, 3.0, 0.05)
         X, Y = np.meshgrid(x, y)
-        zs = np.array(X**2 + Y**2)
+        zs = np.array(X**3 + Y**3)
         Z = zs.reshape(X.shape)
         ax1.plot_surface(X, Y, Z)
         ax1.set_xlabel('x')
@@ -284,23 +284,27 @@ def get_ip_intervals(initial_interval: str):
     # initial point parts
     initial_point_list = re.split(r'[:=]', initial_interval[0].replace(" ", ""))
     # now initial_point_list contains 3 elements, which is 'initial' , [var..], [initial_point..]
-    vars = re.findall(r'\w', initial_point_list[1])
+    vars_form = re.findall(r'\w', initial_point_list[1])
     initial_point = list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', initial_point_list[2]))
 
     # interval parts
     intervals = []
+
+    # if interval spotted
     interval_list = initial_interval[1].splitlines()
 
-    for i in range(len(vars)):
-        intervals.append(list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', interval_list[i+1])))
+    if len(interval_list) == 2:
+        for i in range(len(vars_form)):
+            intervals.append(list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', interval_list[i+1])))
 
     return initial_point, intervals
 
 
 def list_string_float(string_list: List[str]):
+    float_list = []
     for i in range(len(string_list)):
-        string_list[i] = float(string_list[i])
-    return string_list
+        float_list.append(float(string_list[i]))
+    return float_list
 
 
 if __name__ == '__main__':
