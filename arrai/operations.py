@@ -1,6 +1,7 @@
 from .arrai import *
 from .explosion import Explosion
 from . import helpers as helpers
+from decimal import Decimal
 import math
 from typing import List
 

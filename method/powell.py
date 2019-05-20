@@ -4,6 +4,7 @@ from method.golden_section import golden_section, build_var_dict
 from arrai.arrai import Arrai
 from Equation import Equation
 from Exception.explosion import Explosion
+from decimal import Decimal
 
 
 maximum_value = 99999999
@@ -36,7 +37,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
         # check break situation:
         # distance between X[i] and X[i-1] smaller than error value
         if i > 0:
-            if mag(X[i] - X[i-1]) < error_value:
+            if Arrai.norm([Arrai(X[i]) - Arrai(X[i-1])]) < error_value:
                 break
 
         P = Arrai([X[i]])
@@ -45,26 +46,26 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
 
         for j in range(total_var):
             alpha_lb, alpha_ub = get_lb_ub(interval, P[j], S[j])
-            alphas.set_col(j, Arrai(golden_section(equation, vars_form, alpha_lb, alpha_ub, P[j], S[j])))
-            P.insert_row(Arrai([Arrai(P[j]) + alphas[0][j]*Arrai(S[j])]))
+            alphas = alphas.set_col(j, Arrai(golden_section(equation, vars_form, alpha_lb, alpha_ub, P[j], S[j])))
+            P.insert_row(Arrai(P[j]) + alphas[0][j]*Arrai(S[j]))
 
             vars_dict = build_var_dict(vars_form, P[j+1])
-            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' % (i, j, alphas[j], P[j+1], equation.eval_normal_form(vars_dict)))
+            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' % (i, j, alphas[0][j], P[j+1], equation.eval_normal_form(vars_dict)))
 
         # The new displacement vector(summation alphas[i]*S[i] from 0 to total_var-1) becomes a new search vector
-        sn = P[total_var] - P[0]
-        X.insert_row(Arrai([P[total_var]]))
+        sn = Arrai(P[total_var]) - Arrai(P[0])
+        X.insert_row(Arrai(P[total_var]))
 
         # get the index to replaced, index = argmax alphas[k]*||S[k]|| for all k
-        value = alphas[0] * mag(S[0])
+        value = Arrai.norm([Arrai(S[0])]) * alphas[0][0]
         index = 0
         for k in range(1, total_var):
-            temp_value = alphas[k] * mag(S[k])
+            temp_value = Arrai.norm([Arrai(S[k])]) * alphas[0][k]
             if temp_value > value:
                 index = k
 
         S.delete_row(index)
-        S.insert_row(Arrai([sn]))
+        S.insert_row(sn)
         answer += ('New S{%s}\n\n' % S)
 
     answer += ('X Set = {%s}\n\n' % X)
@@ -80,7 +81,7 @@ def mag(vector: List[float]):
     for i in vector:
         total += i*i
 
-    return sqrt(total)
+    return Decimal(sqrt(total))
 
 
 # return the lower_bound and the upper_bound of the alpha
@@ -91,9 +92,9 @@ def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
 
     for k in range(total):
         if si[k] != 0:
-            temp_low = interval[k][0] - pi[k]
+            temp_low = Decimal(interval[k][0]) - pi[k]
             temp_low /= si[k]
-            temp_high = interval[k][1] - pi[k]
+            temp_high = Decimal(interval[k][1]) - pi[k]
             temp_high /= si[k]
 
             if temp_low < lower_bound:
@@ -112,10 +113,10 @@ if __name__ == '__main__':
     answer, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
     print(answer)
     # print('Q2: sin(3x)+cos(x)')
-    # answer, X = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
+    # answer, X = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
     # print(answer)
     # print('Q2: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
-    # answer, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
+    # answer, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     # print(answer)
     pass
 
