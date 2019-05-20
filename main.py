@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from UI import UI
+from UI.UI import UI
 import sys
 
 # main function

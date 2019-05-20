@@ -19,4 +19,7 @@ class Manager(object):
         self.intervals = intervals
 
     def run(self):
-        return 'successfully called runned!\n'
+        print('Equation Str: %s\n' % self.equation_str)
+        print('Method Name: %s\n' % self.method_name)
+        print('Initial Point: %s\n' % self.initial_point)
+        print('Interval: %s\n' % self.intervals)
