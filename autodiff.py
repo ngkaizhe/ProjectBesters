@@ -245,10 +245,7 @@ class PowOp(Op):
 
     def diff(self, node: Node, variable: str) -> None:
         if variable == node.inputs[0].normal_form:
-            if node.const_attr == 2:
-                node.diff_form = "2*(%s)" % node.inputs[0].normal_form
-            else:
-                node.diff_form = "(%s)*(%s)^((%s)-1)" % (node.inputs[1].normal_form, node.inputs[0].normal_form, node.inputs[1].normal_form)
+            node.diff_form = "(%s)*(%s)^((%s)-1)" % (node.inputs[1].normal_form, node.inputs[0].normal_form, node.inputs[1].normal_form)
         else:
             node.diff_form = '0'
         return

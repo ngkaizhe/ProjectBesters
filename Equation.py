@@ -240,6 +240,12 @@ class Equation(object):
         self.build_tree(RPN(self).build())
         self.topo = self.topo_sort(self.root)
 
+    def __repr__(self) -> None:
+        return self.root.normal_form
+
+    def __str__(self) -> None:
+        return self.root.normal_form
+
     def topo_sort(self, root: Node) -> [Node]:
         visited = set()
         topo = []
@@ -322,8 +328,16 @@ class Equation(object):
     # Ex: z = x+y
     # dz/dx = [1,0]
     # dz/dy = [0,1]
-    def eval_diff_form(self, diff_parts: Dict[str, float]) -> str:
-        pass
+    def eval_diff_form(self, diff_parts: {str}) -> str:
+        eqn = self
+        for part in diff_parts:
+            for node in eqn.topo:
+                node.op.diff(node, part)
+            # print(eqn.root.normal_form + ' | ', end = '')
+            eqn = Equation(eqn.root.diff_form)
+            # print(eqn.root.normal_form)
+        
+        return eqn
 
     def eval_normal_form(self, variable_parts: Dict[str, float]) -> float:
         value_nodes = dict()
@@ -348,10 +362,17 @@ class Equation(object):
         pass
 
 if __name__ == '__main__':
-    b = Equation('x^2y^3')
+    b = Equation('x^2+y^3*x')
     print(b.root.normal_form)
-    print(b.root.op.diff(b.root, ''))
-    print(b.eval_normal_form({'x' : 3, 'y' : 6}))
+    diff_x_y = b.eval_diff_form(['y','x'])
+    print(diff_x_y)
+    print(diff_x_y.eval_normal_form({'y':3}))
+
+    b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
+    print(b.root.normal_form)
+    print(b.eval_diff_form(['x']))
+    print(b.eval_normal_form({'x' : 50, 'y' : 30}))
+
     b = Equation('x*y/sin(cos x * y)sin(x)sin y + sin z sin a')
     print(b.root.normal_form)
     print(b.eval_normal_form({'x' : 10, 'y' : 90, 'z' : 0}))
