@@ -383,8 +383,8 @@ class Equation(object):
         for part in diff_parts:
             for node in eqn.topo:
                 node.op.diff(node, part)
-            print(eqn.root.normal_form + ' | ', end='')
-            print(eqn.root.diff_form)
+            # print(eqn.root.normal_form + ' | ', end='')
+            # print(eqn.root.diff_form)
             eqn = Equation(eqn.root.diff_form)
 
         return eqn
