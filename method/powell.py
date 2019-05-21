@@ -1,5 +1,4 @@
 from typing import List
-from math import sqrt
 from method.golden_section import golden_section, build_var_dict
 from arrai.arrai import Arrai
 from Equation import Equation
@@ -24,7 +23,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
             Explosion.POWELL_LENGTH_INTERVAL_MUST_BE_ONLY_TWO.bang()
 
     # total iteration
-    N = 100
+    N = 100000
     X = Arrai([initial_point])
     every_point = [initial_point]
     S = Arrai.identity((total_var, total_var))
@@ -111,8 +110,8 @@ if __name__ == '__main__':
     # answer1, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     # print(answer1)
     print('Q4: x^2+y^2')
-    answer1, every_point = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    answer1, every_point1 = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     print(answer1)
-    print(every_point)
+    print(every_point1)
     pass
 

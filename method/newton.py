@@ -33,7 +33,7 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
             temp.append(eqn.eval_diff_form([vars_form[c]]))
         F.append(temp)
 
-    N = 100
+    N = 100000
     i = 0
     while i < N:
         if i != 0:
