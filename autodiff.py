@@ -128,7 +128,7 @@ class NegOp(Op):
         if node.inputs[0].diff_form == '0':
             node.diff_form = '0'
         else:
-            node.diff_form = "-(%s)" % (node.diff_form)
+            node.diff_form = "-(%s)" % (node.inputs[0].diff_form)
         return
 
 

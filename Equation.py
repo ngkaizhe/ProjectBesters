@@ -333,9 +333,9 @@ class Equation(object):
         for part in diff_parts:
             for node in eqn.topo:
                 node.op.diff(node, part)
-            # print(eqn.root.normal_form + ' | ', end = '')
+            print(eqn.root.normal_form + ' | ', end = '')
+            print(eqn.root.diff_form)
             eqn = Equation(eqn.root.diff_form)
-            # print(eqn.root.normal_form)
         
         return eqn
 
@@ -362,19 +362,19 @@ class Equation(object):
         pass
 
 if __name__ == '__main__':
-    b = Equation('x^2+y^3*x')
-    print(b.root.normal_form)
-    diff_x_y = b.eval_diff_form(['y','x'])
+    b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
+    print(b)
+    diff_x_y = b.eval_diff_form(['y', 'x'])
     print(diff_x_y)
-    print(diff_x_y.eval_normal_form({'y':3}))
+    print(diff_x_y.eval_normal_form({'y':1290}))
 
     b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
-    print(b.root.normal_form)
+    print(b)
     print(b.eval_diff_form(['x']))
     print(b.eval_normal_form({'x' : 50, 'y' : 30}))
 
     b = Equation('x*y/sin(cos x * y)sin(x)sin y + sin z sin a')
-    print(b.root.normal_form)
+    print(b)
     print(b.eval_normal_form({'x' : 10, 'y' : 90, 'z' : 0}))
 
     #print(b.root.normal_form)
