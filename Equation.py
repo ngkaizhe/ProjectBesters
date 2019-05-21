@@ -1,5 +1,5 @@
 from autodiff import Node
-from autodiff import (add_op, sub_op, mul_op, div_op, pow_op, sin_op, cos_op, neg_op, placeholder_op, const_op)
+from autodiff import (sin_op, cos_op, neg_op, placeholder_op, const_op)
 from typing import List, Dict
 import re
 from enum import Enum
@@ -7,8 +7,9 @@ from decimal import Decimal
 import math
 from Exception.explosion import Explosion
 
+
 class TokenType(Enum):
-    ### Value Type ###
+    # Value Type #
     NUL = 'null'
     END = 'end, no more token could be parsed'
     VAL = 'value'
@@ -16,7 +17,7 @@ class TokenType(Enum):
     NEG = 'unary negative'
     VAR = 'variable'
 
-    ### Operator Type ###
+    # Operator Type #
     ADD = '+'
     SUB = '-'
     MUL = '*'
@@ -24,29 +25,32 @@ class TokenType(Enum):
     RMD = '%'
     EXP = '^'
     FACT = '!'
-    
-    ### Special Symbol ###
+
+    # Special Symbol #
     PAREN_L = '('
     PAREN_R = ')'
     COMMA = ','
 
-    ### Functions ###
+    # Functions ###
     SQRT = 'sqrt'
     POW = 'pow'
     SIN = 'sin'
     COS = 'cos'
     TAN = 'tan'
 
-class Token(object) :
+
+class Token(object):
     def __init__(self, token_type: TokenType) -> None:
         self.type = token_type
 
-class Associative(Enum) :
-    ### Associative ###
+
+class Associative(Enum):
+    # Associative #
     LEFT = 'left associative'
     RIGHT = 'right associative'
 
-class RPN(object) :
+
+class RPN(object):
 
     precedences = {
         TokenType.ADD: 2,
@@ -64,7 +68,7 @@ class RPN(object) :
         TokenType.POW: 10,
         TokenType.FACT: 20,
         TokenType.NEG: 100,
-        TokenType.PAREN_L: 0        
+        TokenType.PAREN_L: 0
     }
 
     associatives = {
@@ -84,7 +88,8 @@ class RPN(object) :
         TokenType.NEG: Associative.RIGHT
     }
 
-    operators_allow_unary_next = [ # These operator allows the next operator to be unary operator
+    # These operator allows the next operator to be unary operator
+    operators_allow_unary_next = [
         TokenType.ADD,
         TokenType.SUB,
         TokenType.MUL,
@@ -97,14 +102,15 @@ class RPN(object) :
         TokenType.NEG
     ]
 
-    operator_patterns = re.compile("^([+-/%*^!(,)])")
-    value_patterns = re.compile("^\d+[.]?\d*")
-    unary_patterns = re.compile("^([+-]+)")
-    naming_patterns = re.compile("^([a-zA-Z]+[a-zA-Z0-9]*)") # Used for variable, function naming pattern
+    operator_pattern = re.compile("^([+-/%*^!(,)])")
+    value_pattern = re.compile("^\d+[.]?\d*")
+    unary_pattern = re.compile("^([+-]+)")
+    naming_pattern = re.compile("^([a-zA-Z]+[a-zA-Z0-9]*)")
+    # Used for variable, function naming pattern
 
     def __init__(self, equation: 'Equation') -> None:
         self.equation = equation
-        self.needle = 0 # Used to track the index in string
+        self.needle = 0  # Used to track the index in string
         self.last_token = Token(TokenType.NUL)
         self.output = []
         self.stack = []
@@ -125,67 +131,70 @@ class RPN(object) :
         except ValueError:
             return TokenType.NUL
 
-    def can_this_token_be_unary(self) -> bool: # Check if the current operator can be unary by looking at previous token
+    # Check if the current operator can be unary by looking at previous token
+    def can_this_token_be_unary(self) -> bool:
         return self.last_token.type in RPN.operators_allow_unary_next
 
     def next_token(self) -> Token:
-        while (self.needle < len(self.equation.str_eqn) and str.isspace(self.equation.str_eqn[self.needle])):
+        while (self.needle < len(self.equation.str_eqn) and
+                str.isspace(self.equation.str_eqn[self.needle])):
             self.needle += 1
 
-
-        match = RPN.value_patterns.match(self.equation.str_eqn[self.needle:])
+        match = RPN.value_pattern.match(self.equation.str_eqn[self.needle:])
         if (match):
-            self.needle += len(match.group());
+            self.needle += len(match.group())
 
             ret = Token(TokenType.VAL)
-            ret.number = match.group();
-            
+            ret.number = match.group()
+
             return ret
 
-
-        match = RPN.unary_patterns.match(self.equation.str_eqn[self.needle:])
-        if (match and self.can_this_token_be_unary() ):
-            self.needle += len(match.group());
+        match = RPN.unary_pattern.match(self.equation.str_eqn[self.needle:])
+        if (match and self.can_this_token_be_unary()):
+            self.needle += len(match.group())
 
             count_neg = 0
             for c in match.group():
-                if(c == '-'): count_neg += 1
+                if(c == '-'):
+                    count_neg += 1
 
             if(count_neg % 2 == 0):
                 return Token(TokenType.POS)
             else:
                 return Token(TokenType.NEG)
 
-        match = RPN.operator_patterns.match(self.equation.str_eqn[self.needle:])
+        match = RPN.operator_pattern.match(self.equation.str_eqn[self.needle:])
         if (match):
             self.needle += len(match.group())
             return Token(RPN.get_token_type_by_string(match.group()))
 
-        match = RPN.naming_patterns.match(self.equation.str_eqn[self.needle:])
+        match = RPN.naming_pattern.match(self.equation.str_eqn[self.needle:])
         if (match):
             self.needle += len(match.group())
             name = match.group()
             token_type = RPN.get_token_type_by_string(name)
-            if (token_type == TokenType.NUL): # Not a function, treat it as a variable
+
+            # Not a function, treat it as a variable
+            if (token_type == TokenType.NUL):
                 token = Token(TokenType.VAR)
                 token.varname = name
                 return token
 
             else:
-                return Token(token_type) # Return matched function
+                # Return matched function
+                return Token(token_type)
 
         return TokenType.END
 
     def pop_stack_into_output(self):
-    
+
         self.output.append(self.stack[-1])
         self.stack.pop()
-    
 
-    def push_stack(self, token : Token):
+    def push_stack(self, token: Token):
         if token.type in {TokenType.VAL, TokenType.VAR}:
-            if (self.last_token.type == TokenType.PAREN_R
-                or token.type == TokenType.VAR and self.last_token.type == TokenType.VAL):
+            if (self.last_token.type == TokenType.PAREN_R or
+                    token.type == TokenType.VAR and self.last_token.type == TokenType.VAL):
                 self.push_stack(Token(TokenType.MUL))
             self.output.append(token)
 
@@ -201,8 +210,8 @@ class RPN(object) :
             while(len(self.stack) > 0):
 
                 prece_prev = RPN.precedence(self.stack[-1])
-                if (assoc == Associative.LEFT and prece_prev >= prece
-                or assoc == Associative.RIGHT and prece_prev > prece):
+                if (assoc == Associative.LEFT and prece_prev >= prece or
+                        assoc == Associative.RIGHT and prece_prev > prece):
                     self.pop_stack_into_output()
                 else:
                     break
@@ -213,7 +222,6 @@ class RPN(object) :
                 self.push_stack(Token(TokenType.MUL))
             self.stack.append(token)
 
-
     # Build RPN by str_eqn
     def build(self):
         self.needle = 0
@@ -222,8 +230,9 @@ class RPN(object) :
         self.last_token = Token(TokenType.NUL)
 
         while (True):
-            token = self.next_token();
-            if (token == TokenType.END): break
+            token = self.next_token()
+            if (token == TokenType.END):
+                break
             self.push_stack(token)
             self.last_token = token
 
@@ -255,17 +264,18 @@ class Equation(object):
 
         return topo
 
-    def topo_sort_helper(self, current_node: Node, topo: [], visited : []) -> None:
-            if current_node in visited: return
+    def topo_sort_helper(self, current_node: Node, topo: [], visited: []) -> None:
+            if current_node in visited:
+                return
 
-            if (current_node.inputs != None):
+            if current_node.inputs is not None:
                 for node in current_node.inputs:
                     self.topo_sort_helper(node, topo, visited)
 
             visited.add(current_node)
             topo.append(current_node)
 
-    def build_tree(self, rpn : List[Node]) -> Node:
+    def build_tree(self, rpn: List[Node]) -> Node:
         self.topo = []
         node_queue = []
         for token in rpn:
@@ -274,55 +284,71 @@ class Equation(object):
 
             elif token.type == TokenType.VAR:
                 node = self.get_variable(token.varname)
-                if (node == None): # If variable not exists, create the variable and push to bank
+
+                # If variable not exists, create the variable and push to bank
+                if node is None:
                     node = self.make_variable(token.varname)
 
-            elif token.type in {TokenType.ADD, TokenType.SUB, TokenType.MUL, TokenType.DIV, TokenType.EXP, TokenType.RMD, TokenType.POW}:
-                if (len(node_queue) < 2): raise ValueError("SyntaxError: mismatched operand.")
+            elif token.type in {TokenType.ADD, TokenType.SUB, TokenType.MUL,
+                                TokenType.DIV, TokenType.EXP, TokenType.RMD, TokenType.POW}:
+                if (len(node_queue) < 2):
+                    Explosion.EQUATION_BUILD_TREE_MISMATCHED_OPERAND.bang()
 
-                first = node_queue[-2]; 
+                first = node_queue[-2]
                 second = node_queue[-1]
                 node_queue.pop(), node_queue.pop()
 
-                if token.type == TokenType.ADD: node = first + second
-                elif token.type == TokenType.SUB: node = first - second
-                elif token.type == TokenType.MUL: node = first * second
-                elif token.type == TokenType.DIV: node = first / second
-                elif token.type == TokenType.EXP: node = first ** second
-                else: raise ValueError("Unsupported yet")
-
+                if token.type == TokenType.ADD:
+                    node = first + second
+                elif token.type == TokenType.SUB:
+                    node = first - second
+                elif token.type == TokenType.MUL:
+                    node = first * second
+                elif token.type == TokenType.DIV:
+                    node = first / second
+                elif token.type == TokenType.EXP:
+                    node = first ** second
+                else:
+                    raise ValueError("Unsupported yet")
 
             elif token.type in {TokenType.NEG, TokenType.SIN, TokenType.COS}:
-                if (len(node_queue) < 1): raise ValueError("SyntaxError: mismatched operand.")
+                if (len(node_queue) < 1):
+                    raise ValueError("SyntaxError: mismatched operand.")
 
                 first = node_queue[-1]
                 node_queue.pop()
 
                 is_const = True if (first.op == const_op) else False
 
-                if token.type == TokenType.NEG: func = (lambda x: x*-1) if is_const else neg_op
-                elif token.type == TokenType.SIN: func = (lambda x: Decimal(math.sin(x))) if is_const else sin_op
-                elif token.type == TokenType.COS: func = (lambda x: Decimal(math.cos(x))) if is_const else cos_op
+                if token.type == TokenType.NEG:
+                    func = (lambda x: x * -1) if is_const else neg_op
+                elif token.type == TokenType.SIN:
+                    func = (lambda x: Decimal(math.sin(x))) if is_const else sin_op
+                elif token.type == TokenType.COS:
+                    func = (lambda x: Decimal(math.cos(x))) if is_const else cos_op
 
-                if is_const: node = const_op(func(first.const_attr))
-                else: node = func(first)
+                if is_const:
+                    node = const_op(func(first.const_attr))
+                else:
+                    node = func(first)
 
             elif token.type == TokenType.PAREN_L:
                 continue
 
             node_queue.append(node)
 
-        if(len(node_queue) != 1): raise ValueError("SyntaxError: something went wrong.")
+        if(len(node_queue) != 1):
+            raise ValueError("SyntaxError: something went wrong.")
 
         self.root = node_queue[0]
 
-    def get_variable(self, var_name : str) -> Node:
+    def get_variable(self, var_name: str) -> Node:
         if (var_name in self.variable_bank):
             return self.variable_bank[var_name]
         else:
             return None
 
-    def make_variable(self, var_name : str) -> Node:
+    def make_variable(self, var_name: str) -> Node:
         variable = self.variable_bank[var_name] = placeholder_op(var_name)
         return variable
 
@@ -334,10 +360,10 @@ class Equation(object):
         for part in diff_parts:
             for node in eqn.topo:
                 node.op.diff(node, part)
-            print(eqn.root.normal_form + ' | ', end = '')
+            print(eqn.root.normal_form + ' | ', end='')
             print(eqn.root.diff_form)
             eqn = Equation(eqn.root.diff_form)
-        
+
         return eqn
 
     def eval_normal_form(self, variable_parts: Dict[str, float]) -> Decimal:
@@ -358,27 +384,27 @@ class Equation(object):
 
         return value_nodes[self.root]
 
-
     def get_normal_form(self) -> str:
         pass
+
 
 if __name__ == '__main__':
     b = Equation('(3.5*x^2-3*x)^2')
     print(b)
     diff_x_y = b.eval_diff_form(['x'])
     print(diff_x_y)
-    print(diff_x_y.eval_normal_form({'y':1290}))
+    print(diff_x_y.eval_normal_form({'y': 1290}))
 
     b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
     print(b)
     print(b.eval_diff_form(['x']))
-    print(b.eval_normal_form({'x' : 50, 'y' : 30}))
+    print(b.eval_normal_form({'x': 50, 'y': 30}))
 
     b = Equation('x*y/sin(cos x * y)sin(x)sin y + sin z sin a')
     print(b)
-    print(b.eval_normal_form({'x' : 10, 'y' : 90, 'z' : 0}))
+    print(b.eval_normal_form({'x': 10, 'y': 90, 'z': 0}))
 
-    #print(b.root.normal_form)
+    # print(b.root.normal_form)
     '''
     b = Equation('(3)')
     a = RPN(b).output
@@ -392,6 +418,3 @@ if __name__ == '__main__':
         else:
             print(token.type.value)
     '''
-    
-
-
