@@ -4,21 +4,23 @@ from typing import List
 from decimal import Decimal
 
 
-error_value = 0.0000001
-GR = Decimal(sqrt(5) - 1) / 2
+ERROR = 0.0000001
+GOLDEN_RATIO = Decimal(sqrt(5) - 1) / 2
+MAX_ITERATION = 100000
 
 
-def golden_section(equation: Equation, vars_form: List[str], lower_bound: float, upper_bound: float, p: list, vector: list) -> Decimal:
+def golden_section(equation: Equation, vars_form: List[str], 
+                   lower_bound: float, upper_bound: float, p: list, vector: list) -> Decimal:
     a = Decimal(lower_bound)
     b = Decimal(upper_bound)
     func = equation.eval_normal_form
     total_var = len(vars_form)
-    d = GR * (b - a)
+    d = GOLDEN_RATIO * (b - a)
     x1 = a + d
     x2 = b - d
-    N = 0
+    count_iter = 0
 
-    while abs(x1 - x2) > error_value and N < 100000:
+    while abs(x1 - x2) > ERROR and count_iter < MAX_ITERATION:
         parameter_list = []
         for i in range(total_var):
             parameter_list.append(p[i] + x1 * vector[i])
@@ -38,10 +40,10 @@ def golden_section(equation: Equation, vars_form: List[str], lower_bound: float,
         else:
             b = x1
 
-        d = GR * (b - a)
+        d = GOLDEN_RATIO * (b - a)
         x1 = a + d
         x2 = b - d
-        N += 1
+        count_iter += 1
 
     return x1
 

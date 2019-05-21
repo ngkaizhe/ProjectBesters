@@ -5,9 +5,10 @@ from Equation import Equation
 from Exception.explosion import Explosion
 from decimal import Decimal
 
-maximum_value = 99999999
-minimum_value = -99999999
-error_value = 0.0000001
+MAXIMUM = 99999999
+MINIMUM = -99999999
+ERROR = 0.0000001
+MAX_ITERATION = 100000
 
 
 def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[float], interval: List[List[float]]):
@@ -29,14 +30,13 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
     for i in range(total_var):
         gradient.append(equation.eval_diff_form([vars_form[i]]))
 
-    N = 100000
     i = 0
     Lambda = 100
 
-    while i < N:
+    while i < MAX_ITERATION:
         # two break situations
         if i != 0:
-            if abs(Arrai.norm([X[i] - X[i-1]])) < error_value:
+            if abs(Arrai.norm([X[i] - X[i - 1]])) < ERROR:
                 break
         if Lambda <= 0:
             break
@@ -58,7 +58,7 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
         answer += ('i=%s\n' % i)
         answer += ('h=%s' % h)
         answer += ('Lamdba=%s\n' % Lambda)
-        answer += ('%s=%s\n' % (vars_form, X[i+1]))
+        answer += ('%s=%s\n' % (vars_form, X[i + 1]))
         i += 1
 
     answer += ('\n%s=%s' % (vars_form, X[i]))
@@ -69,8 +69,8 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
 # return the lower_bound and the upper_bound of the lambda
 def get_lb_ub(interval: List[List[float]], xi: List[float], hi: List[float]):
     total = len(interval)
-    lower_bound = maximum_value
-    upper_bound = minimum_value
+    lower_bound = MAXIMUM
+    upper_bound = MINIMUM
 
     for k in range(total):
         if hi[k] != 0:

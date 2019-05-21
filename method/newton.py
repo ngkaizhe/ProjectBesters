@@ -5,7 +5,8 @@ from Exception.explosion import Explosion
 from decimal import Decimal
 
 
-error_value = 0.000001
+ERROR = 0.000001
+MAX_ITERATION = 100000
 
 
 def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
@@ -33,11 +34,11 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
             temp.append(eqn.eval_diff_form([vars_form[c]]))
         F.append(temp)
 
-    N = 100000
+
     i = 0
-    while i < N:
+    while i < MAX_ITERATION:
         if i != 0:
-            if abs(Arrai.norm([X[i] - X[i-1]])) < error_value:
+            if abs(Arrai.norm([X[i] - X[i-1]])) < ERROR:
                 break
 
         # calculate Hessian

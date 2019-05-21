@@ -5,9 +5,10 @@ from Equation import Equation
 from Exception.explosion import Explosion
 from decimal import Decimal
 
-maximum_value = 99999999
-minimum_value = -99999999
-error_value = 0.0000001
+MAXIMUM = 99999999
+MINIMUM = -99999999
+ERROR = 0.0000001
+MAX_ITERATION = 100000
 
 
 def powell(equation_str: str, vars_form: List[str], initial_point: List[float], interval: List[List[float]]):
@@ -22,8 +23,6 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
         if len(i) == 2 is False:
             Explosion.POWELL_LENGTH_INTERVAL_MUST_BE_ONLY_TWO.bang()
 
-    # total iteration
-    N = 100000
     X = Arrai([initial_point])
     every_point = [initial_point]
     S = Arrai.identity((total_var, total_var))
@@ -32,11 +31,11 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
     vars_dict = build_var_dict(vars_form, X[0])
     answer += ('First loop: f(%s)= %s\n\n' % (X[0], equation.eval_normal_form(vars_dict)))
 
-    for i in range(N):
+    for i in range(MAX_ITERATION):
         # check break situation:
         # distance between X[i] and X[i-1] smaller than error value
         if i > 0:
-            if Arrai.norm([Arrai(X[i]) - Arrai(X[i-1])]) < error_value:
+            if Arrai.norm([Arrai(X[i]) - Arrai(X[i-1])]) < ERROR:
                 break
 
         P = Arrai([X[i]])
@@ -78,8 +77,8 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
 # return the lower_bound and the upper_bound of the alpha
 def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
     total = len(interval)
-    lower_bound = maximum_value
-    upper_bound = minimum_value
+    lower_bound = MAXIMUM
+    upper_bound = MINIMUM
 
     for k in range(total):
         if si[k] != 0:

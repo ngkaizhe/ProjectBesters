@@ -5,7 +5,8 @@ from Exception.explosion import Explosion
 from decimal import Decimal
 
 
-error_value = 0.000001
+ERROR = 0.000001
+MAX_ITERATION = 100
 
 
 def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
@@ -33,15 +34,14 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
         F.append(temp)
 
     i = 0
-    N = 100
     Hessians = []
     Hessians_inverses = []
     g = []
 
-    while i < N:
+    while i < MAX_ITERATION:
         # two break conditions, second condition is g[k] = 0
         if i != 0:
-            if abs(Arrai.norm([X[i] - X[i - 1]])) < error_value:
+            if abs(Arrai.norm([X[i] - X[i - 1]])) < ERROR:
                 break
 
         var_dict = build_var_dict(vars_form, X[i].transpose()[0])
@@ -69,7 +69,7 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
             answer += ('Initial Hessian inverse: %s' % Hessians_inverses[i])
 
         else:
-            k = i-1
+            k = i - 1
             # calculate g[i]
             temp_g = []
             for eqn in gradient:
@@ -79,8 +79,8 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
             if is_all_zero(g[k]):
                 break
 
-            g_distance = g[k+1]-g[k]
-            x_distance = X[k+1]-X[k]
+            g_distance = g[k + 1] - g[k]
+            x_distance = X[k + 1] - X[k]
 
             # use DFP to get Hessian Inverse:
             current_Hessian_inverse = Hessians_inverses[k]
@@ -108,7 +108,8 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
         answer += ('%s: %s\n' % (vars_form, X[i + 1]))
         i += 1
 
-    answer += ('\n%s = %sf(%s) = %s' % (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
+    answer += ('\n%s = %sf(%s) = %s' %
+              (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
     return answer, X
 
 
@@ -123,7 +124,7 @@ def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
 def is_all_zero(g: Arrai):
     for r in g:
         for c in r:
-            if abs(c) > error_value:
+            if abs(c) > ERROR:
                 return False
     return True
 

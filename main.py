@@ -6,5 +6,5 @@ import sys
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = UI('Optimization', 300, 300, 1200, 480)
+    ex = UI()
     sys.exit(app.exec_())
