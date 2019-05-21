@@ -5,6 +5,7 @@ import re
 from enum import Enum
 from decimal import Decimal
 import math
+from Exception.explosion import Explosion
 
 class TokenType(Enum):
     ### Value Type ###
@@ -328,7 +329,7 @@ class Equation(object):
     # Ex: z = x+y
     # dz/dx = [1,0]
     # dz/dy = [0,1]
-    def eval_diff_form(self, diff_parts: {str}) -> str:
+    def eval_diff_form(self, diff_parts: {str}) -> 'Equation':
         eqn = self
         for part in diff_parts:
             for node in eqn.topo:
@@ -339,7 +340,7 @@ class Equation(object):
         
         return eqn
 
-    def eval_normal_form(self, variable_parts: Dict[str, float]) -> float:
+    def eval_normal_form(self, variable_parts: Dict[str, float]) -> Decimal:
         value_nodes = dict()
         for node in self.topo:
             if node.op is placeholder_op:
@@ -362,9 +363,9 @@ class Equation(object):
         pass
 
 if __name__ == '__main__':
-    b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
+    b = Equation('(3.5*x^2-3*x)^2')
     print(b)
-    diff_x_y = b.eval_diff_form(['y', 'x'])
+    diff_x_y = b.eval_diff_form(['x'])
     print(diff_x_y)
     print(diff_x_y.eval_normal_form({'y':1290}))
 

@@ -1,6 +1,7 @@
 from typing import List
 from math import sin, cos
 from decimal import Decimal
+from Exception.explosion import Explosion
 
 
 class Node(object):
@@ -244,10 +245,9 @@ class PowOp(Op):
         return Decimal(pow(input_vals[0], input_vals[1]))
 
     def diff(self, node: Node, variable: str) -> None:
-        if variable == node.inputs[0].normal_form:
-            node.diff_form = "(%s)*(%s)^((%s)-1)" % (node.inputs[1].normal_form, node.inputs[0].normal_form, node.inputs[1].normal_form)
-        else:
-            node.diff_form = '0'
+        if (node.inputs[1].op != const_op):
+            Explosion.NODE_POW_OP_POWER_TO_NON_CONST_NOT_SUPPORTED.bang() # power to non constant are not support, yet
+        node.diff_form = "(%s)*(%s)*(%s)^(%s-1)" % (node.inputs[0].diff_form, node.inputs[1].normal_form, node.inputs[0].normal_form, (node.inputs[1]).normal_form)
         return
 
 

@@ -9,6 +9,8 @@ This is the exception class for method
 
 
 class Explosion(Enum):
+    NODE_POW_OP_POWER_TO_NON_CONST_NOT_SUPPORTED = \
+        ValueError('Sorry! the power up to non constant term are not supported yet')
     POWELL_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION = \
         ValueError('The initial point and interval doesnt have the same length as the total variables detect in input equation!')
     POWELL_LENGTH_INTERVAL_MUST_BE_ONLY_TWO = \
