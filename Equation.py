@@ -1,11 +1,10 @@
 from autodiff import Node
-from autodiff import (sin_op, cos_op, neg_op, placeholder_op, const_op)
+from autodiff import (sin_op, cos_op, tan_op, csc_op, sec_op, cot_op, neg_op, placeholder_op, const_op)
 from typing import List, Dict
-import re
 from enum import Enum
 from decimal import Decimal
-import math
 from Exception.explosion import Explosion
+import re
 
 
 class TokenType(Enum):
@@ -37,6 +36,9 @@ class TokenType(Enum):
     SIN = 'sin'
     COS = 'cos'
     TAN = 'tan'
+    SEC = 'sec'
+    CSC = 'csc'
+    COT = 'cot'
 
 
 class Token(object):
@@ -62,6 +64,9 @@ class RPN(object):
         TokenType.SIN: 5,
         TokenType.COS: 5,
         TokenType.TAN: 5,
+        TokenType.SEC: 5,
+        TokenType.CSC: 5,
+        TokenType.COT: 5,
 
         TokenType.EXP: 4,
         TokenType.SQRT: 10,
@@ -85,6 +90,9 @@ class RPN(object):
         TokenType.SIN: Associative.RIGHT,
         TokenType.COS: Associative.RIGHT,
         TokenType.TAN: Associative.RIGHT,
+        TokenType.SEC: Associative.RIGHT,
+        TokenType.CSC: Associative.RIGHT,
+        TokenType.COT: Associative.RIGHT,
         TokenType.NEG: Associative.RIGHT
     }
 
@@ -217,7 +225,8 @@ class RPN(object):
                     break
             self.stack.append(token)
 
-        elif token.type in {TokenType.PAREN_L, TokenType.SIN, TokenType.COS}:
+        elif token.type in {TokenType.PAREN_L, TokenType.SIN, TokenType.COS, TokenType.TAN,
+                            TokenType.CSC, TokenType.SEC, TokenType.COT}:
             if self.last_token.type in {TokenType.PAREN_R, TokenType.VAL, TokenType.VAR}:
                 self.push_stack(Token(TokenType.MUL))
             self.stack.append(token)
@@ -275,6 +284,26 @@ class Equation(object):
             visited.add(current_node)
             topo.append(current_node)
 
+    list_op_func = {
+        TokenType.SIN: sin_op,
+        TokenType.COS: cos_op,
+        TokenType.TAN: tan_op,
+        TokenType.CSC: csc_op,
+        TokenType.SEC: sec_op,
+        TokenType.COT: cot_op,
+        TokenType.NEG: neg_op
+    }
+
+    list_const_op_func = {
+        TokenType.SIN: lambda x: Decimal(math.sin(x)),
+        TokenType.COS: lambda x: Decimal(math.cos(x)),
+        TokenType.TAN: lambda x: Decimal(math.tan(x)),
+        TokenType.CSC: lambda x: Decimal(1 / math.sin(x)),
+        TokenType.SEC: lambda x: Decimal(1 / math.cos(x)),
+        TokenType.COT: lambda x: Decimal(1 / math.tan(x)),
+        TokenType.NEG: lambda x: Decimal(-x)
+    }
+
     def build_tree(self, rpn: List[Node]) -> Node:
         self.topo = []
         node_queue = []
@@ -311,7 +340,8 @@ class Equation(object):
                 else:
                     raise ValueError("Unsupported yet")
 
-            elif token.type in {TokenType.NEG, TokenType.SIN, TokenType.COS}:
+            elif token.type in {TokenType.NEG, TokenType.SIN, TokenType.COS, TokenType.TAN,
+                                TokenType.CSC, TokenType.SEC, TokenType.COT}:
                 if (len(node_queue) < 1):
                     raise ValueError("SyntaxError: mismatched operand.")
 
@@ -320,17 +350,10 @@ class Equation(object):
 
                 is_const = True if (first.op == const_op) else False
 
-                if token.type == TokenType.NEG:
-                    func = (lambda x: x * -1) if is_const else neg_op
-                elif token.type == TokenType.SIN:
-                    func = (lambda x: Decimal(math.sin(x))) if is_const else sin_op
-                elif token.type == TokenType.COS:
-                    func = (lambda x: Decimal(math.cos(x))) if is_const else cos_op
-
                 if is_const:
-                    node = const_op(func(first.const_attr))
+                    node = const_op(Equation.list_const_op_func[token.type](first.const_attr))
                 else:
-                    node = func(first)
+                    node = Equation.list_op_func[token.type](first)
 
             elif token.type == TokenType.PAREN_L:
                 continue
@@ -389,11 +412,11 @@ class Equation(object):
 
 
 if __name__ == '__main__':
-    b = Equation('(3.5*x^2-3*x)^2')
+    b = Equation('(tan (y^2))')
     print(b)
-    diff_x_y = b.eval_diff_form(['x'])
+    diff_x_y = b.eval_diff_form(['y'])
     print(diff_x_y)
-    print(diff_x_y.eval_normal_form({'y': 1290}))
+    print(diff_x_y.eval_normal_form({'x': 1290}))
 
     b = Equation('7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
     print(b)

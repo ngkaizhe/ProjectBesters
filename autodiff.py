@@ -1,5 +1,5 @@
 from typing import List
-from math import sin, cos
+from math import sin, cos, tan, pow
 from decimal import Decimal
 from Exception.explosion import Explosion
 
@@ -377,6 +377,90 @@ class CosOp(Op):
         return
 
 
+class TanOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "tan(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return Decimal(tan(input_vals[0]))
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "(%s)*(sec(%s))^2" % (
+                node.inputs[0].diff_form, node.inputs[0].normal_form)
+        return
+
+
+class CscOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "csc(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return Decimal(1 / sin(input_vals[0]))
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "-(%s)*cot(%s)*csc(%s)" % (
+                node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[0].normal_form)
+        return
+
+
+class SecOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "sec(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return Decimal(1 / cos(input_vals[0]))
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "(%s)*tan(%s)*sec(%s)" % (
+                node.inputs[0].diff_form, node.inputs[0].normal_form, node.inputs[0].normal_form)
+        return
+
+
+class CotOp(Op):
+    def __call__(self, node: Node) -> Node:
+        new_node = Op.__call__(self)
+        new_node.inputs = [node]
+        new_node.const_attr = 0
+        new_node.normal_form = "cot(%s)" % node.normal_form
+        return new_node
+
+    def compute(self, node: Node, input_vals: list) -> float:
+        assert len(input_vals) == 1
+        return Decimal(1 / tan(input_vals[0]))
+
+    def diff(self, node: Node, variable: str) -> None:
+        if node.inputs[0].diff_form == '0':
+            node.diff_form = '0'
+        else:
+            node.diff_form = "-(%s)*(csc(%s))^2" % (
+                node.inputs[0].diff_form, node.inputs[0].normal_form)
+        return
+
+
 add_op = AddOp()
 sub_op = SubOp()
 mul_op = MulOp()
@@ -384,6 +468,10 @@ div_op = DivOp()
 pow_op = PowOp()
 sin_op = SinOp()
 cos_op = CosOp()
+tan_op = TanOp()
+csc_op = CscOp()
+sec_op = SecOp()
+cot_op = CotOp()
 neg_op = NegOp()
 placeholder_op = PlaceholderOp()
 const_op = ConstOp()
