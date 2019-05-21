@@ -62,11 +62,11 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
         g = Arrai(g)
 
         x = X[i] - Decimal(0.9) * (Hessian_inverse * g)
-        answer += ('%s = %s\n\n' % (vars_form, x))
+        answer += ('%s = %s\n' % (vars_form, x))
         X.append(x)
         i += 1
 
-    answer += ('%s = %sf(%s) = %s' % (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
+    answer += ('\n%s = %sf(%s) = %s' % (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
     return answer, X
 
 
@@ -79,12 +79,14 @@ def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
 
 
 if __name__ == '__main__':
-    # print('Q1:')
-    # b = 'x^2+x-2*x^0.5'
-    # newton(b, ['x'], [7])
-    print('Q2:')
-    b = '7+x^2-3*x*y+3.25*y^2-4y'
-    answer, X = newton(b, ['x', 'y'], [1, -1])
-    print(answer)
+    print('Q1:')
+    b = 'x^2+x-2*x^0.5'
+    answer1, X = newton(b, ['x'], [7])
+    print(answer1)
     print(X)
+    # print('Q2:')
+    # b = '7+x^2-3*x*y+3.25*y^2-4y'
+    # answer1, X = newton(b, ['x', 'y'], [1, -1])
+    # print(answer1)
+    # print(X)
     pass
