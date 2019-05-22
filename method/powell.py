@@ -102,17 +102,20 @@ def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
 
 if __name__ == '__main__':
     # print('Q1: x^2+x-2*x^0.5')
-    # answer1, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50], interval=[[0, 70]])
+    # answer1, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50.0], interval=[[0.0, 70.0]])
     # print(answer1)
+    # print(X)
     # print('Q2: sin(3x)+cos(x)')
-    # answer1, X = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
+    # answer1, every_point1 = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
     # print(answer1)
-    # print('Q2: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
-    # answer1, X = powell(equation_str='7 + x^2 - 3*x*y + 3.25*y^2 - 4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
-    # print(answer1)
-    print('Q4: x^2+y^2')
-    answer1, every_point1 = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    # print(every_point1)
+    print('Q3: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
+    answer1, every_point1 = powell(equation_str='7+x^2-3*x*y+3.25*y^2-4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     print(answer1)
     print(every_point1)
+    # print('Q4: x^2+y^2')
+    # answer1, every_point1 = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    # print(answer1)
+    # print(every_point1)
     pass
 

@@ -50,7 +50,7 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
 
         gradients = (-1 * Arrai(gradients)).transpose()
 
-        # get the lower bound and upper bound of step_size
+        # get the step_size
         lower_bound, upper_bound = get_lb_ub(interval, X[k].transpose()[0], gradients.transpose()[0])
         step_size = golden_section(equation, vars_form, lower_bound, upper_bound, X[k].transpose()[0], gradients.transpose()[0])
         X.append(X[k] + step_size * gradients)
@@ -91,15 +91,15 @@ def get_lb_ub(interval: List[List[float]], xi: List[float], hi: List[float]):
 
 
 if __name__ == '__main__':
-    print('Q1:')
-    equation1_str = 'x^2+x-2*x^0.5'
-    answer1, X1 = steep_descent(equation1_str, ['x'], [50], [[0, 70]])
-    print(answer1)
-    print(X1)
-    # print('Q2:')
-    # equation1_str = '7+x^2-3*x*y+3.25*y^2-4y'
-    # answer1, X1 = steep_descent(equation1_str, ['x', 'y'], [50, 30], [[-50, 70], [-70, 70]])
+    # print('Q1:')
+    # equation1_str = 'x^2+x-2*x^0.5'
+    # answer1, X1 = steep_descent(equation1_str, ['x'], [50], [[0, 70]])
     # print(answer1)
     # print(X1)
+    print('Q2:')
+    equation1_str = '7+x^2-3*x*y+3.25*y^2-4y'
+    answer1, X1 = steep_descent(equation1_str, ['x', 'y'], [50, 30], [[-50, 70], [-70, 70]])
+    print(answer1)
+    print(X1)
 
 
