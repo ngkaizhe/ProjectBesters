@@ -3,6 +3,7 @@ from method.golden_section import golden_section, build_var_dict
 from arrai.arrai import Arrai
 from Equation import Equation
 from Exception.explosion import Explosion
+from method.powell import get_lb_ub
 from decimal import Decimal
 
 MAXIMUM = 99999999
@@ -65,41 +66,16 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
     answer += ('f(%s)=%s\n' % (X[k], equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
-
-# return the lower_bound and the upper_bound of the lambda
-def get_lb_ub(interval: List[List[float]], xi: List[float], hi: List[float]):
-    total = len(interval)
-    lower_bound = MAXIMUM
-    upper_bound = MINIMUM
-
-    for k in range(total):
-        if hi[k] != 0:
-            temp_low = Decimal(interval[k][0]) - xi[k]
-            temp_low /= hi[k]
-            temp_high = Decimal(interval[k][1]) - xi[k]
-            temp_high /= hi[k]
-
-            if temp_low < lower_bound:
-                lower_bound = temp_low
-            if temp_high > upper_bound:
-                upper_bound = temp_high
-
-            if hi[k] < 0:
-                lower_bound, upper_bound = upper_bound, lower_bound
-
-    return lower_bound, upper_bound
-
-
 if __name__ == '__main__':
-    # print('Q1:')
-    # equation1_str = 'x^2+x-2*x^0.5'
-    # answer1, X1 = steep_descent(equation1_str, ['x'], [50], [[0, 70]])
-    # print(answer1)
-    # print(X1)
-    print('Q2:')
-    equation1_str = '7+x^2-3*x*y+3.25*y^2-4y'
-    answer1, X1 = steep_descent(equation1_str, ['x', 'y'], [50, 30], [[-50, 70], [-70, 70]])
+    print('Q1:')
+    equation1_str = 'x^2+x-2*x^0.5'
+    answer1, X1 = steep_descent(equation1_str, ['x'], [50], [[0, 70]])
     print(answer1)
     print(X1)
+    # print('Q2:')
+    # equation1_str = '7+x^2-3*x*y+3.25*y^2-4y'
+    # answer1, X1 = steep_descent(equation1_str, ['x', 'y'], [50, 30], [[-50, 70], [-70, 70]])
+    # print(answer1)
+    # print(X1)
 
 

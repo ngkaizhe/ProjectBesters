@@ -79,40 +79,52 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
 # return the lower_bound and the upper_bound of the alpha
 def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
     total = len(interval)
-    lower_bound = MAXIMUM
-    upper_bound = MINIMUM
+    list_lower_bound = []
+    list_upper_bound = []
 
     for k in range(total):
-        if si[k] != 0:
+        if abs(si[k]) > 0.0000001:
             temp_low = Decimal(interval[k][0]) - pi[k]
             temp_low /= si[k]
             temp_high = Decimal(interval[k][1]) - pi[k]
             temp_high /= si[k]
 
-            if temp_low < lower_bound:
-                lower_bound = temp_low
-            if temp_high > upper_bound:
-                upper_bound = temp_high
-
             if si[k] < 0:
-                lower_bound, upper_bound = upper_bound, lower_bound
+                temp_low, temp_high = temp_high, temp_low
+
+            list_lower_bound.append(temp_low)
+            list_upper_bound.append(temp_high)
+
+    # no upper bound and lower found for alpha, return 0 instead
+    if len(list_upper_bound) == 0 or len(list_lower_bound) == 0:
+        return 0, 0
+
+    lower_bound = list_lower_bound[0]
+    upper_bound = list_upper_bound[0]
+    for i in range(1, len(list_lower_bound)):
+        if list_lower_bound[i] > lower_bound:
+            lower_bound = list_lower_bound[i]
+
+    for i in range(1, len(list_upper_bound)):
+        if list_upper_bound[i] < upper_bound:
+            upper_bound = list_upper_bound[i]
 
     return lower_bound, upper_bound
 
 
 if __name__ == '__main__':
-    # print('Q1: x^2+x-2*x^0.5')
-    # answer1, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50.0], interval=[[0.0, 70.0]])
-    # print(answer1)
-    # print(X)
+    print('Q1: x^2+x-2*x^0.5')
+    answer1, X = powell(equation_str='x^2+x-2*x^0.5', vars_form=['x'], initial_point=[50.0], interval=[[0.0, 70.0]])
+    print(answer1)
+    print(X)
     # print('Q2: sin(3x)+cos(x)')
     # answer1, every_point1 = powell(equation_str='sin(3*x)+cos(x)', vars_form=['x'], initial_point=[1], interval=[[0.3, 3]])
     # print(answer1)
     # print(every_point1)
-    print('Q3: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
-    answer1, every_point1 = powell(equation_str='7+x^2-3*x*y+3.25*y^2-4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
-    print(answer1)
-    print(every_point1)
+    # print('Q3: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
+    # answer1, every_point1 = powell(equation_str='7+x^2-3*x*y+3.25*y^2-4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
+    # print(answer1)
+    # print(every_point1)
     # print('Q4: x^2+y^2')
     # answer1, every_point1 = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     # print(answer1)
