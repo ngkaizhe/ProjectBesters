@@ -131,6 +131,7 @@ class UI(QWidget):
         self.grid_layout.addLayout(method_v_box, 0, 1)
 
     def create_output_block(self):
+        self.output_textbox = QPlainTextEdit(QWidget().resize(640, 480))
 
         self.output_save_button = QPushButton("save")
         self.output_save_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -138,6 +139,7 @@ class UI(QWidget):
 
         self.output_clear_button = QPushButton("clear")
         self.output_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.output_clear_button.clicked.connect(self.output_clear)
 
         self.output_output_label = QLabel('Output:')
 
@@ -145,31 +147,12 @@ class UI(QWidget):
         output_h_box.addWidget(self.output_save_button)
         output_h_box.addWidget(self.output_clear_button)
 
-        self.output_textbox = QPlainTextEdit(QWidget().resize(640, 480))
-
         output_v_box = QVBoxLayout()
         output_v_box.addWidget(self.output_output_label)
         output_v_box.addWidget(self.output_textbox)
 
         output_v_box.addLayout(output_h_box)
         self.grid_layout.addLayout(output_v_box, 1, 0, 1, 2)
-
-    # def create_variable_block(self):
-    #
-    #     self.variable_clear_button = QPushButton("clear")
-    #     self.variable_clear_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-    #
-    #     self.variable_variable_label = QLabel('Variables:')
-    #
-    #     self.variable_textbox = QPlainTextEdit(QWidget().resize(640, 480))
-    #     self.variable_textbox.setReadOnly(True)
-    #
-    #     output_v_box = QVBoxLayout()
-    #     output_v_box.addWidget(self.variable_variable_label)
-    #     output_v_box.addWidget(self.variable_textbox)
-    #     output_v_box.addWidget(self.variable_clear_button)
-    #
-    #     self.grid_layout.addLayout(output_v_box, 1, 1)
 
     def create_graph_block(self):
         ''' plot some random stuff '''
@@ -211,9 +194,12 @@ class UI(QWidget):
             self.open_file_location = filename[: temp_pos + 1]
 
         if filename:
-            with open(filename, 'r', encoding='utf8') as file:
+            with open(filename, 'rb') as file:
                 read_data = file.read()
-                read_data_list = read_data.splitlines()
+                udatabtype = read_data.decode("utf-8")
+                asciidatabtype = udatabtype.encode("ascii", "ignore")
+                asciidata =asciidatabtype.decode("ascii")
+                read_data_list = asciidata.splitlines()
                 self.input_list.addItems(read_data_list)
 
     def save_file_dialog(self):
@@ -231,6 +217,9 @@ class UI(QWidget):
     def input_clear(self):
         self.input_list.clear()
 
+    def output_clear(self):
+        self.output_textbox.clear()
+
     def method_reset(self):
         self.method_intial_interval_textbox.setPlainText('')
         self.method_combobox.setCurrentIndex(0)
@@ -238,17 +227,35 @@ class UI(QWidget):
     def method_calculate(self):
         initial_interval = self.method_intial_interval_textbox.toPlainText()
         method = self.method_combobox.currentText()
-        equation_str = self.input_list.currentItem()
+        equation_item = self.input_list.currentItem()
 
-        if equation_str is None or method == 'None----' or initial_interval == '':
-            assert False
+        if equation_item is None:
+            self.output_textbox.setPlainText('No equation string detected!\n')
+            return
 
-        equation_str = equation_str.text()
-        # get initial point and intervals
-        initial_point, intervals = get_ip_intervals(initial_interval)
+        elif method == 'None----':
+            self.output_textbox.setPlainText('Method couldnt be None\n')
+            return
 
-        manager = Manager(equation_str, method, initial_point, intervals)
-        manager.run()
+        elif initial_interval == '':
+            self.output_textbox.setPlainText('No initial point\n')
+            return
+
+        # exception added
+        try:
+            equation_str = equation_item.text()
+            # get initial point and intervals
+            initial_point, vars_form, intervals = get_ip_intervals(initial_interval)
+
+            # manager = Manager(equation_str, vars_form, method, initial_point, intervals)
+            manager = Manager(equation_str=equation_str, vars_form=vars_form, method_name=method,
+                              initial_point=initial_point, intervals=intervals)
+            answer, Xs = manager.run()
+            self.output_textbox.setPlainText(answer)
+
+        except Exception as explosion:
+            answer = explosion.args[0]
+            self.output_textbox.setPlainText(answer)
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         HeightIncreasement = self.frameGeometry().height() - self.height
@@ -285,19 +292,21 @@ def get_ip_intervals(initial_interval: str):
     initial_point_list = re.split(r'[:=]', initial_interval[0].replace(" ", ""))
     # now initial_point_list contains 3 elements, which is 'initial' , [var..], [initial_point..]
     vars_form = re.findall(r'\w', initial_point_list[1])
-    initial_point = list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', initial_point_list[2]))
+    initial_point = list_string_float(re.findall(r'[-+]?\d*\.\d+|[-+]?\d+', initial_point_list[2]))
 
     # interval parts
     intervals = []
+    interval_list = []
 
     # if interval spotted
-    interval_list = initial_interval[1].splitlines()
+    if len(initial_interval) >= 2:
+        interval_list = initial_interval[1].splitlines()
 
-    if len(interval_list) == 2:
+    if len(interval_list) >= 2:
         for i in range(len(vars_form)):
-            intervals.append(list_string_float(re.findall(r'[-+]?\d*\.\d+|\d+', interval_list[i+1])))
+            intervals.append(list_string_float(re.findall(r'[-+]?\d*\.\d+|[-+]?\d+', interval_list[i+1])))
 
-    return initial_point, intervals
+    return initial_point, vars_form, intervals
 
 
 def list_string_float(string_list: List[str]):
