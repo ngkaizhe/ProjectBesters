@@ -14,10 +14,10 @@ MAX_ITERATION = 100000
 def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[float], interval: List[List[float]]):
     answer = ''
     equation = Equation(equation_str)
-    total_var = len(vars_form)
+    var_count = len(vars_form)
 
     # check input type whether correct or not
-    if (len(initial_point) == total_var == len(interval)) is False:
+    if (len(initial_point) == var_count == len(interval)) is False:
         Explosion.STEEP_DESCENT_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
     for i in interval:
         if len(i) == 2 is False:
@@ -25,44 +25,44 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
 
     X = [Arrai(initial_point).transpose()]
 
-    # build gradient
-    gradient = []
-    for i in range(total_var):
-        gradient.append(equation.eval_diff_form([vars_form[i]]))
+    # calculate the partial first derivative of the equation with respective to all variables
+    first_partial_derivatives = []
+    for i in range(var_count):
+        first_partial_derivatives.append(equation.eval_diff_form([vars_form[i]]))
 
-    i = 0
-    Lambda = 100
+    k = 0
+    step_size = 100
 
-    while i < MAX_ITERATION:
+    while k < MAX_ITERATION:
         # two break situations
-        if i != 0:
-            if abs(Arrai.norm([X[i] - X[i - 1]])) < ERROR:
+        if k != 0:
+            if abs(Arrai.norm([X[k] - X[k - 1]])) < ERROR:
                 break
-        if Lambda <= 0:
+        if step_size <= 0:
             break
 
-        var_dict = build_var_dict(vars_form, X[i].transpose()[0])
+        var_dict = build_var_dict(vars_form, X[k].transpose()[0])
 
-        # calculate h
-        h = []
-        for k in range(total_var):
-            h.append(gradient[k].eval_normal_form(var_dict))
+        # calculate gradient with respect to all variables
+        gradients = []
+        for i in range(var_count):
+            gradients.append(first_partial_derivatives[i].eval_normal_form(var_dict))
 
-        h = (-1 * Arrai(h)).transpose()
+        gradients = (-1 * Arrai(gradients)).transpose()
 
-        # get the lower bound and upper bound of lambda
-        lb, ub = get_lb_ub(interval, X[i].transpose()[0], h.transpose()[0])
-        Lambda = golden_section(equation, vars_form, lb, ub, X[i].transpose()[0], h.transpose()[0])
-        X.append(X[i] + Lambda * h)
+        # get the lower bound and upper bound of step_size
+        lower_bound, upper_bound = get_lb_ub(interval, X[k].transpose()[0], gradients.transpose()[0])
+        step_size = golden_section(equation, vars_form, lower_bound, upper_bound, X[k].transpose()[0], gradients.transpose()[0])
+        X.append(X[k] + step_size * gradients)
 
-        answer += ('i=%s\n' % i)
-        answer += ('h=%s' % h)
-        answer += ('Lamdba=%s\n' % Lambda)
-        answer += ('%s=%s\n' % (vars_form, X[i + 1]))
-        i += 1
+        answer += ('k=%s\n' % k)
+        answer += ('h=%s' % gradients)
+        answer += ('Lamdba=%s\n' % step_size)
+        answer += ('%s=%s\n' % (vars_form, X[k + 1]))
+        k += 1
 
-    answer += ('\n%s=%s' % (vars_form, X[i]))
-    answer += ('f(%s)=%s\n' % (X[i], equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
+    answer += ('\n%s=%s' % (vars_form, X[k]))
+    answer += ('f(%s)=%s\n' % (X[k], equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
 

@@ -8,16 +8,17 @@ from decimal import Decimal
 MAXIMUM = 99999999
 MINIMUM = -99999999
 ERROR = 0.0000001
+# total iteration
 MAX_ITERATION = 100000
 
 
 def powell(equation_str: str, vars_form: List[str], initial_point: List[float], interval: List[List[float]]):
     answer = ''
     equation = Equation(equation_str)
-    total_var = len(vars_form)
+    var_count = len(vars_form)
 
     # check input type whether correct or not
-    if (len(initial_point) == total_var == len(interval)) is False:
+    if (len(initial_point) == var_count == len(interval)) is False:
         Explosion.POWELL_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
     for i in interval:
         if len(i) == 2 is False:
@@ -25,7 +26,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
 
     X = Arrai([initial_point])
     every_point = [initial_point]
-    S = Arrai.identity((total_var, total_var))
+    S = Arrai.identity((var_count, var_count))
 
     # build dict
     vars_dict = build_var_dict(vars_form, X[0])
@@ -35,30 +36,31 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
         # check break situation:
         # distance between X[i] and X[i-1] smaller than error value
         if i > 0:
-            if Arrai.norm([Arrai(X[i]) - Arrai(X[i-1])]) < ERROR:
+            if Arrai.norm([Arrai(X[i]) - Arrai(X[i - 1])]) < ERROR:
                 break
 
         P = Arrai([X[i]])
         # save the value of alphas
-        alphas = Arrai.zeros((1, total_var))
+        alphas = Arrai.zeros((1, var_count))
 
-        for j in range(total_var):
+        for j in range(var_count):
             alpha_lb, alpha_ub = get_lb_ub(interval, P[j], S[j])
             alphas = alphas.set_col(j, Arrai(golden_section(equation, vars_form, alpha_lb, alpha_ub, P[j], S[j])))
-            P.insert_row(Arrai(P[j]) + alphas[0][j]*Arrai(S[j]))
+            P.insert_row(Arrai(P[j]) + alphas[0][j] * Arrai(S[j]))
 
-            vars_dict = build_var_dict(vars_form, P[j+1])
-            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' % (i, j, alphas[0][j], P[j+1], equation.eval_normal_form(vars_dict)))
-            every_point.append(P[j+1])
+            vars_dict = build_var_dict(vars_form, P[j + 1])
+            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' %
+                       (i, j, alphas[0][j], P[j + 1], equation.eval_normal_form(vars_dict)))
+            every_point.append(P[j + 1])
 
-        # The new displacement vector(summation alphas[i]*S[i] from 0 to total_var-1) becomes a new search vector
-        sn = Arrai(P[total_var]) - Arrai(P[0])
-        X.insert_row(Arrai(P[total_var]))
+        # The new displacement vector(summation alphas[i]*S[i] from 0 to var_count-1) becomes a new search vector
+        sn = Arrai(P[var_count]) - Arrai(P[0])
+        X.insert_row(Arrai(P[var_count]))
 
         # get the index to replaced, index = argmax alphas[k]*||S[k]|| for all k
         value = Arrai.norm([Arrai(S[0])]) * alphas[0][0]
         index = 0
-        for k in range(1, total_var):
+        for k in range(1, var_count):
             temp_value = Arrai.norm([Arrai(S[k])]) * alphas[0][k]
             if temp_value > value:
                 index = k

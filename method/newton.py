@@ -12,62 +12,62 @@ MAX_ITERATION = 100000
 def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
     answer = ''
     current_equation = Equation(equation_str)
-    total_var = len(vars_form)
+    var_count = len(vars_form)
     X = [Arrai(initial_point).transpose()]
 
     # check input type whether correct or not
-    if (len(initial_point) == total_var) is False:
+    if (len(initial_point) == var_count) is False:
         Explosion.POWELL_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
 
-    # build gradient
-    gradient = []
+    # calculate first partial derivatives respect to all variables
+    first_partial_derivatives = []
 
-    for i in range(total_var):
+    for i in range(var_count):
         # print(current_equation.eval_diff_form(pos))
-        gradient.append(current_equation.eval_diff_form([vars_form[i]]))
+        first_partial_derivatives.append(current_equation.eval_diff_form([vars_form[i]]))
 
     # build F(x...)
     F = []
-    for eqn in gradient:
+    for eqn in first_partial_derivatives:
         temp = []
-        for c in range(total_var):
+        for c in range(var_count):
             temp.append(eqn.eval_diff_form([vars_form[c]]))
         F.append(temp)
 
 
-    i = 0
-    while i < MAX_ITERATION:
-        if i != 0:
-            if abs(Arrai.norm([X[i] - X[i-1]])) < ERROR:
+    k = 0
+    while k < MAX_ITERATION:
+        if k != 0:
+            if abs(Arrai.norm([X[k] - X[k-1]])) < ERROR:
                 break
 
         # calculate Hessian
-        Hessian = []
-        var_dict = build_var_dict(vars_form, X[i].transpose()[0])
+        hessian = []
+        var_dict = build_var_dict(vars_form, X[k].transpose()[0])
 
         for eqn_list in F:
             temp = []
             for eqn in eqn_list:
                 temp.append(eqn.eval_normal_form(var_dict))
-            Hessian.append(temp)
-        Hessian = Arrai(Hessian)
-        Hessian_inverse = Arrai.inverse([Hessian])
-        answer += ('i=%s\n' % i)
-        answer += ('Hessian = %s' % Hessian)
-        answer += ('Hessian Inverse = %s' % Hessian_inverse)
+            hessian.append(temp)
+        hessian = Arrai(hessian)
+        hessian_inverse = Arrai.inverse([hessian])
+        answer += ('k=%s\n' % k)
+        answer += ('Hessian = %s' % hessian)
+        answer += ('Hessian Inverse = %s' % hessian_inverse)
 
-        # calculate g
-        g = []
-        for eqn in gradient:
-            g.append([eqn.eval_normal_form(var_dict)])
-        g = Arrai(g)
+        # calculate gradients
+        gradients = []
+        for eqn in first_partial_derivatives:
+            gradients.append([eqn.eval_normal_form(var_dict)])
+        gradients = Arrai(gradients)
 
-        x = X[i] - Decimal(0.9) * (Hessian_inverse * g)
-        answer += ('%s = %s\n' % (vars_form, x))
-        X.append(x)
-        i += 1
+        next_x = X[k] - Decimal(0.9) * (hessian_inverse * gradients)
+        answer += ('%s = %s\n' % (vars_form, next_x))
+        X.append(next_x)
+        k += 1
 
-    answer += ('\n%s = %sf(%s) = %s' % (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
+    answer += ('\n%s = %sf(%s) = %s' % (vars_form, X[k], X[k], current_equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
 

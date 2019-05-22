@@ -11,41 +11,36 @@ MAX_ITERATION = 100000
 
 def golden_section(equation: Equation, vars_form: List[str], 
                    lower_bound: float, upper_bound: float, p: list, vector: list) -> Decimal:
+    func = equation.eval_normal_form
+    
+    var_count = len(vars_form)
     a = Decimal(lower_bound)
     b = Decimal(upper_bound)
-    func = equation.eval_normal_form
-    total_var = len(vars_form)
     d = GOLDEN_RATIO * (b - a)
-    x1 = a + d
-    x2 = b - d
+    x = [a + d, b - d]
     count_iter = 0
 
-    while abs(x1 - x2) > ERROR and count_iter < MAX_ITERATION:
-        parameter_list = []
-        for i in range(total_var):
-            parameter_list.append(p[i] + x1 * vector[i])
+    while abs(x[0] - x[1]) > ERROR and count_iter < MAX_ITERATION:
+        f = []
+        for i_x in range(2):
+            parameter_list = []
+            for i in range(var_count):
+                parameter_list.append(p[i] + x[i_x] * vector[i])
 
-        vars_dict = build_var_dict(vars_form, parameter_list)
-        f1 = func(vars_dict)
-        parameter_list = []
-        for i in range(total_var):
-            parameter_list.append(p[i] + x2 * vector[i])
+            vars_dict = build_var_dict(vars_form, parameter_list)
+            f.append(func(vars_dict))
 
-        vars_dict = build_var_dict(vars_form, parameter_list)
-        f2 = func(vars_dict)
-
-        if f1 < f2:
-            a = x2
+        if f[0] < f[1]:
+            a = x[1]
 
         else:
-            b = x1
+            b = x[0]
 
         d = GOLDEN_RATIO * (b - a)
-        x1 = a + d
-        x2 = b - d
+        x = [a + d, b - d]
         count_iter += 1
 
-    return x1
+    return x[0]
 
 
 def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
