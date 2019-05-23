@@ -42,5 +42,5 @@ class Manager(object):
             return answer, X
 
         elif self.method_name == 'Conjugate Gradient Methods':
-            answer, X = powell(self.equation_str, self.vars_form, self.initial_point, self.intervals)
+            answer, X = conjugate_gradient(self.equation_str, self.vars_form, self.initial_point, self.intervals)
             return answer, X

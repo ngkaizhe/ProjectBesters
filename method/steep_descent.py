@@ -66,6 +66,7 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
     answer += ('f(%s)=%s\n' % (X[k], equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
+
 if __name__ == '__main__':
     print('Q1:')
     equation1_str = 'x^2+x-2*x^0.5'

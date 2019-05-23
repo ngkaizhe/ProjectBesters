@@ -25,7 +25,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
             Explosion.POWELL_LENGTH_INTERVAL_MUST_BE_ONLY_TWO.bang()
 
     X = Arrai([initial_point])
-    every_point = [initial_point]
+    every_point = [Arrai(initial_point)]
     S = Arrai.identity((var_count, var_count))
 
     # build dict
@@ -51,7 +51,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
             vars_dict = build_var_dict(vars_form, P[j + 1])
             answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' %
                        (i, j, alphas[0][j], P[j + 1], equation.eval_normal_form(vars_dict)))
-            every_point.append(P[j + 1])
+            every_point.append(Arrai(P[j + 1]))
 
         # The new displacement vector(summation alphas[i]*S[i] from 0 to var_count-1) becomes a new search vector
         sn = Arrai(P[var_count]) - Arrai(P[0])

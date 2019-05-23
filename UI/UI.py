@@ -6,12 +6,15 @@ from PyQt5.QtGui import (QResizeEvent, QFont)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import sys
 import os
 from Manager import Manager, Methods
 import re
 from typing import List
+import numpy as np
+from arrai.arrai import Arrai
+from Equation import Equation
+from method.golden_section import build_var_dict
 
 
 class UI(QWidget):
@@ -36,7 +39,6 @@ class UI(QWidget):
         self.output_textbox: QPlainTextEdit = None
         self.output_output_label: QLabel = None
 
-        # graph part with self.figure variables
         # 3d
         self.figure1 = plt.figure()
         self.canvas1 = FigureCanvas(self.figure1)
@@ -45,7 +47,12 @@ class UI(QWidget):
         self.figure2 = plt.figure()
         self.canvas2 = FigureCanvas(self.figure2)
 
+        # graph error message box
+        self.graph_error_texbox: QPlainTextEdit = None
+
         self.grid_layout: QGridLayout = None
+        self.hbox : QHBoxLayout = None
+        self.vbox : QVBoxLayout = None
 
         self.open_file_location: str = os.path.dirname(os.path.abspath(__file__))
         self.save_file_location: str = os.path.dirname(os.path.abspath(__file__))
@@ -115,7 +122,6 @@ class UI(QWidget):
 
         # Qlabel to be used
         self.method_method_used_label = QLabel('Method Used:')
-
         self.method_intial_interval_textbox = QPlainTextEdit()
 
         method_h2_box = QHBoxLayout()
@@ -132,6 +138,7 @@ class UI(QWidget):
 
     def create_output_block(self):
         self.output_textbox = QPlainTextEdit(QWidget().resize(640, 480))
+        self.output_textbox.setReadOnly(True)
 
         self.output_save_button = QPushButton("save")
         self.output_save_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -159,33 +166,22 @@ class UI(QWidget):
         self.figure1.suptitle('3d')
         self.figure2.suptitle('2d')
 
-        ax1 = self.figure1.add_subplot(111, projection='3d')
-        x = y = np.arange(-3.0, 3.0, 0.05)
-        X, Y = np.meshgrid(x, y)
-        zs = np.array(X**3 + Y**3)
-        Z = zs.reshape(X.shape)
-        ax1.plot_surface(X, Y, Z)
-        ax1.set_xlabel('x')
-        ax1.set_ylabel('y')
-        ax1.set_zlabel('z')
-
-        ax2 = self.figure2.add_subplot(111)
-        ax2.contour(X, Y, Z)
-        ax2.set_xlabel('x')
-        ax2.set_ylabel('y')
-
         self.canvas1.draw()
         self.canvas2.draw()
         # self.figure2.legend()
 
-        hbox1 = QHBoxLayout()
-        hbox2 = QHBoxLayout()
+        self.graph_error_texbox = QPlainTextEdit('Default graph(NULL)')
+        self.graph_error_texbox.setReadOnly(True)
 
-        hbox1.addWidget(self.canvas1)
-        hbox2.addWidget(self.canvas2)
+        self.hbox = QHBoxLayout()
+        self.vbox = QVBoxLayout()
 
-        self.grid_layout.addLayout(hbox1, 0, 2, 2, 1)
-        self.grid_layout.addLayout(hbox2, 0, 3, 2, 1)
+        self.hbox.addWidget(self.canvas1)
+        self.hbox.addWidget(self.canvas2)
+        self.vbox.addLayout(self.hbox)
+        self.vbox.addWidget(self.graph_error_texbox)
+
+        self.grid_layout.addLayout(self.vbox, 0, 2, 2, 2)
 
     def open_file_dialog(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open file", self.open_file_location, "Text Files (*.txt)")
@@ -241,6 +237,14 @@ class UI(QWidget):
             self.output_textbox.setPlainText('No initial point\n')
             return
 
+        # global variables
+        equation_str: str = None
+        initial_point: List[float] = None
+        intervals: List[List[float]] = None
+        answer : str = None
+        Xs: List[Arrai] = None
+        vars_form : List[str] = None
+
         # exception added
         try:
             equation_str = equation_item.text()
@@ -251,11 +255,21 @@ class UI(QWidget):
             manager = Manager(equation_str=equation_str, vars_form=vars_form, method_name=method,
                               initial_point=initial_point, intervals=intervals)
             answer, Xs = manager.run()
+
+            # write answer to output
             self.output_textbox.setPlainText(answer)
 
         except Exception as explosion:
             answer = explosion.args[0]
             self.output_textbox.setPlainText(answer)
+
+        try:
+            # draw out graph
+            draw_graph(self, equation_str, vars_form, Xs, intervals)
+
+        # catch graph drawing exception
+        except:
+            self.graph_error_texbox.setPlainText('Error while building graph!\n Current Equation: %s' % equation_str)
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         HeightIncreasement = self.frameGeometry().height() - self.height
@@ -316,7 +330,190 @@ def list_string_float(string_list: List[str]):
     return float_list
 
 
+def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List[Arrai], intervals: List[List[float]]):
+    ''' clear windows '''
+    plt.close('all')
+
+    # # 3d test
+    # equation_str = 'x^2+y^2'
+    # eqn = Equation(equation_str)
+    # vars_form = ['x', 'y']
+    # intervals = [[-10, 10], [-5, 70]]
+    # all_points = [Arrai([1, 2]), Arrai([2, 8]), Arrai([-2, 50]), Arrai([0, 20])]
+    #
+    # # 2d test
+    # equation_str = 'x^2'
+    # eqn = Equation(equation_str)
+    # vars_form = ['x']
+    # intervals = [[-100, 100]]
+    # all_points = [Arrai([-75]), Arrai([-50]), Arrai([-25]), Arrai([0])]
+    #
+    # # exception test
+    # equation_str = 'x^2'
+    # eqn = Equation(equation_str)
+    # vars_form = ['x', 'y'] # wrong
+    # intervals = [[-100, 100]]
+    # all_points = [Arrai([-75]), Arrai([-50]), Arrai([-25]), Arrai([0])]
+
+    eqn = Equation(equation_str)
+
+    # 3d
+    if len(vars_form) == 2:
+        # plot1 (3D)
+        ui.figure1 = plt.figure()
+        ui.canvas1 = FigureCanvas(ui.figure1)
+
+        total_cut = 15.0
+        marker_size = 0.5
+
+        ui.figure1.suptitle('3d')
+        ax1 = ui.figure1.add_subplot(111, projection='3d')
+        x = np.arange(intervals[0][0], intervals[0][1], (intervals[0][1] - intervals[0][0]) / total_cut)
+        y = np.arange(intervals[1][0], intervals[1][1], (intervals[1][1] - intervals[1][0]) / total_cut)
+        X, Y = np.meshgrid(x, y)
+
+        # testing with np here
+        # z_list2 = X ** 2 + Y ** 2
+
+        z_list = []
+        for i in range(X.shape[0]):
+            row = []
+            for j in range(X.shape[1]):
+                vars_dict = build_var_dict(vars_form, [X[i][j], Y[i][j]])
+                ans = eqn.eval_normal_form(vars_dict)
+                row.append(float(ans))
+            z_list.append(row)
+
+        z_list = np.array(z_list)
+        zs = np.array(z_list)
+        Z = zs.reshape(X.shape)
+        ax1.plot_surface(X, Y, Z)
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('y')
+        ax1.set_zlabel('z')
+
+        # draw our result
+        own_x_list = []
+        for i in all_points:
+            own_x_list.append(float(i.array[0][0]))
+
+        own_y_list = []
+        for i in all_points:
+            own_y_list.append(float(i.array[0][1]))
+
+        own_z_list = []
+        for i in range(len(all_points)):
+            vars_dict = build_var_dict(vars_form, [own_x_list[i], own_y_list[i]])
+            ans = eqn.eval_normal_form(vars_dict)
+            own_z_list.append(float(ans))
+
+        own_x_np = np.array(own_x_list)
+        own_y_np = np.array(own_y_list)
+        own_z_np = np.array(own_z_list)
+        ax1.plot(own_x_np, own_y_np, own_z_np, 'mo-', linewidth=5)
+
+        # plot2 (2d)
+        ui.figure2 = plt.figure()
+        ui.canvas2 = FigureCanvas(ui.figure2)
+        ui.figure2.suptitle('2d')
+        ax2 = plt.figure(2).add_subplot(111)
+        ax2.contour(X, Y, Z)
+        ax2.set_xlabel('x')
+        ax2.set_ylabel('y')
+
+        ax2.plot(own_x_np, own_y_np, 'ro-', markersize=marker_size)
+        ax2.annotate('initial point', xy=(own_x_np[0], own_y_np[0]))
+        ax2.annotate('local minimum point', xy=(own_x_np[len(own_x_np)-1], own_y_np[len(own_y_np)-1]))
+
+        ui.canvas1.draw()
+        ui.canvas2.draw()
+
+        ui.grid_layout.removeItem(ui.hbox)
+        ui.grid_layout.removeItem(ui.vbox)
+
+        ui.graph_error_texbox.setPlainText('Graph built successfull!\n Current Equation: %s\n'
+                                           'X interval: %s\nY interval: %s\n' % (equation_str, intervals[0], intervals[1]))
+
+        ui.hbox = QHBoxLayout()
+        ui.vbox = QVBoxLayout()
+        ui.hbox.addWidget(ui.canvas1)
+        ui.hbox.addWidget(ui.canvas2)
+        ui.vbox.addLayout(ui.hbox)
+        ui.vbox.addWidget(ui.graph_error_texbox)
+
+        ui.grid_layout.addLayout(ui.vbox, 0, 2, 2, 2)
+
+    # 2d
+    elif len(vars_form) == 1:
+        # plot1 (3D)
+        ui.figure1 = plt.figure()
+        ui.canvas1 = FigureCanvas(ui.figure1)
+        ui.figure1.suptitle('3d')
+
+        total_cut = 100.0
+        marker_size = 0.5
+
+        # draw our result
+        own_x_list = []
+        for i in all_points:
+            own_x_list.append(float(i.array[0][0]))
+        own_x_np = np.array(own_x_list)
+
+        own_y_list = []
+        for i in own_x_list:
+            vars_dict = build_var_dict(vars_form, [i])
+            ans = eqn.eval_normal_form(vars_dict)
+            own_y_list.append(float(ans))
+        own_y_np = np.array(own_y_list)
+
+        # plot2 (2d)
+        ui.figure2 = plt.figure()
+        ui.canvas2 = FigureCanvas(ui.figure2)
+        ui.figure2.suptitle('2d')
+        ax2 = plt.figure(2).add_subplot(111)
+
+        X = np.arange(intervals[0][0], intervals[0][1], (intervals[0][1] - intervals[0][0]) / total_cut)
+
+        y_list = []
+        for i in range(X.shape[0]):
+            vars_dict = build_var_dict(vars_form, [X[i]])
+            ans = eqn.eval_normal_form(vars_dict)
+            y_list.append(float(ans))
+
+        Y = np.array(y_list)
+
+        ax2.plot(X, Y)
+        ax2.set_xlabel('x')
+        ax2.set_ylabel('y')
+
+        ax2.plot(own_x_np, own_y_np, 'ro-', markersize=marker_size)
+        ax2.annotate('initial point', xy=(own_x_np[0], own_y_np[0]))
+        ax2.annotate('local minimum point', xy=(own_x_np[len(own_x_np) - 1], own_y_np[len(own_y_np) - 1]))
+
+        ui.canvas1.draw()
+        ui.canvas2.draw()
+
+        ui.grid_layout.removeItem(ui.hbox)
+        ui.grid_layout.removeItem(ui.vbox)
+
+        ui.graph_error_texbox.setPlainText('Graph built successfull!\n Current Equation: %s\n'
+                                           'X interval: %s\n' % (
+                                           equation_str, intervals[0]))
+
+        ui.hbox = QHBoxLayout()
+        ui.vbox = QVBoxLayout()
+        ui.hbox.addWidget(ui.canvas1)
+        ui.hbox.addWidget(ui.canvas2)
+        ui.vbox.addLayout(ui.hbox)
+        ui.vbox.addWidget(ui.graph_error_texbox)
+
+        ui.grid_layout.addLayout(ui.vbox, 0, 2, 2, 2)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = UI()
     sys.exit(app.exec_())
+
+
+
