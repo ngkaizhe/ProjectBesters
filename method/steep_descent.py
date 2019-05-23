@@ -1,6 +1,4 @@
 from typing import List
-import sys
-sys.path.append("..")
 from method.golden_section import golden_section, build_var_dict
 from arrai.arrai import Arrai
 from Equation import Equation
