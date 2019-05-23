@@ -34,7 +34,6 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
             temp.append(eqn.eval_diff_form([vars_form[c]]))
         F.append(temp)
 
-
     k = 0
     while k < MAX_ITERATION:
         if k != 0:

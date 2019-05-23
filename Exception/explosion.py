@@ -22,5 +22,5 @@ class Explosion(Enum):
                 same length as the total variables detect in input equation!')
 
     def bang(self, msg=""):
-        self.value.args = (self.value.args[0] + '\n' + msg)
+        self.value.args = (self.value.args[0] +'\n' +msg,)
         raise self.value
