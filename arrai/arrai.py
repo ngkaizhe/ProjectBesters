@@ -125,6 +125,10 @@ class Arrai(object):
             pass
 
     @classmethod
+    def to_scalar(cls, first: 'Arrai') -> NumberTypes:
+        return to_scalar(first)
+
+    @classmethod
     def norm(cls, first: list) -> NumberTypes:
         return norm(first[0])
 

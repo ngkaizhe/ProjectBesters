@@ -17,7 +17,7 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
 
     # check input type whether correct or not
     if (len(initial_point) == var_count) is False:
-        Explosion.POWELL_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
+        Explosion.LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
 
     # calculate first partial derivatives respect to all variables
     first_partial_derivatives = []

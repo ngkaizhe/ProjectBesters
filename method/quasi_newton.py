@@ -17,7 +17,7 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
 
     # check input type whether correct or not
     if (len(initial_point) == var_count) is False:
-        Explosion.POWELL_LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
+        Explosion.INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION.bang()
 
     # build first_derivatives
     first_partial_derivatives = []
