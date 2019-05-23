@@ -51,8 +51,11 @@ class UI(QWidget):
         self.graph_error_texbox: QPlainTextEdit = None
 
         self.grid_layout: QGridLayout = None
-        self.hbox : QHBoxLayout = None
-        self.vbox : QVBoxLayout = None
+
+        self.hbox1: QHBoxLayout = None
+        self.hbox2: QHBoxLayout = None
+        self.hbox: QHBoxLayout = None
+        self.vbox: QVBoxLayout = None
 
         self.open_file_location: str = os.path.dirname(os.path.abspath(__file__))
         self.save_file_location: str = os.path.dirname(os.path.abspath(__file__))
@@ -172,12 +175,17 @@ class UI(QWidget):
 
         self.graph_error_texbox = QPlainTextEdit('Default graph(NULL)')
         self.graph_error_texbox.setReadOnly(True)
+        self.graph_error_texbox.setMinimumSize(640, 110)
 
+        self.hbox1 = QHBoxLayout()
+        self.hbox2 = QHBoxLayout()
         self.hbox = QHBoxLayout()
         self.vbox = QVBoxLayout()
 
-        self.hbox.addWidget(self.canvas1)
-        self.hbox.addWidget(self.canvas2)
+        self.hbox1.addWidget(self.canvas1)
+        self.hbox2.addWidget(self.canvas2)
+        self.hbox.addLayout(self.hbox1)
+        self.hbox.addLayout(self.hbox2)
         self.vbox.addLayout(self.hbox)
         self.vbox.addWidget(self.graph_error_texbox)
 
@@ -332,6 +340,10 @@ def list_string_float(string_list: List[str]):
 
 def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List[Arrai], intervals: List[List[float]]):
     ''' clear windows '''
+    plt.figure(1)
+    plt.clf()
+    plt.figure(2)
+    plt.clf()
     plt.close('all')
 
     # # 3d test
@@ -359,12 +371,45 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
 
     # 3d
     if len(vars_form) == 2:
+        # check intervals, if no intervals get it by checking all points and get
+        # the smallest x and y, and the largest x and y, the set as intervals
+        if len(intervals) == 0:
+            smallest_x = float(all_points[0].array[0][0])
+            largest_x = float(all_points[0].array[0][0])
+            smallest_y = float(all_points[0].array[1][0])
+            largest_y = float(all_points[0].array[1][0])
+            # set length_between_point_and_interval
+            lbpaih = 50
+            lbpail = 0.02
+
+            for i in all_points:
+                if i.array[0][0] < smallest_x:
+                    smallest_x = float(i.array[0][0])
+                if i.array[0][0] > largest_x:
+                    largest_x = float(i.array[0][0])
+                if i.array[1][0] < smallest_y:
+                    smallest_y = float(i.array[1][0])
+                if i.array[1][0] > largest_y:
+                    largest_y = float(i.array[1][0])
+
+            # get lower bound, upper bound for x
+            # get lower bound, upper bound for y
+            middle_x = largest_x - ((largest_x - smallest_x) / 2)
+            lbx = middle_x - ((middle_x - smallest_x) * 2)
+            ubx = middle_x + ((largest_x - middle_x) * 2)
+
+            middle_y = largest_y - ((largest_y - smallest_y) / 2)
+            lby = middle_y - ((middle_y - smallest_y) * 2)
+            uby = middle_y + ((largest_y - middle_y) * 2)
+
+            intervals = [[lbx, ubx], [lby, uby]]
+
         # plot1 (3D)
         ui.figure1 = plt.figure()
         ui.canvas1 = FigureCanvas(ui.figure1)
 
         total_cut = 15.0
-        marker_size = 0.5
+        marker_size = 5
 
         ui.figure1.suptitle('3d')
         ax1 = ui.figure1.add_subplot(111, projection='3d')
@@ -399,7 +444,7 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
 
         own_y_list = []
         for i in all_points:
-            own_y_list.append(float(i.array[0][1]))
+            own_y_list.append(float(i.array[1][0]))
 
         own_z_list = []
         for i in range(len(all_points)):
@@ -410,7 +455,7 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
         own_x_np = np.array(own_x_list)
         own_y_np = np.array(own_y_list)
         own_z_np = np.array(own_z_list)
-        ax1.plot(own_x_np, own_y_np, own_z_np, 'mo-', linewidth=5)
+        ax1.plot(own_x_np, own_y_np, own_z_np, 'mo-', zorder=100, markersize=marker_size, linewidth=5)
 
         # plot2 (2d)
         ui.figure2 = plt.figure()
@@ -421,23 +466,33 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
         ax2.set_xlabel('x')
         ax2.set_ylabel('y')
 
-        ax2.plot(own_x_np, own_y_np, 'ro-', markersize=marker_size)
+        ax2.plot(own_x_np, own_y_np, 'ro-', markersize=3)
         ax2.annotate('initial point', xy=(own_x_np[0], own_y_np[0]))
         ax2.annotate('local minimum point', xy=(own_x_np[len(own_x_np)-1], own_y_np[len(own_y_np)-1]))
 
         ui.canvas1.draw()
         ui.canvas2.draw()
 
+        ui.grid_layout.removeItem(ui.hbox1)
+        ui.grid_layout.removeItem(ui.hbox2)
         ui.grid_layout.removeItem(ui.hbox)
         ui.grid_layout.removeItem(ui.vbox)
 
-        ui.graph_error_texbox.setPlainText('Graph built successfull!\n Current Equation: %s\n'
-                                           'X interval: %s\nY interval: %s\n' % (equation_str, intervals[0], intervals[1]))
+        ui.graph_error_texbox.setPlainText('Current Equation: %s\n'
+                                           'X interval: %s\nY interval: %s\n'
+                                           'Initial point:%s\nMinimum point:%s\n'
+                                           'Minimum value:%s\n' %
+                                           (equation_str, intervals[0], intervals[1], [own_x_np[0], own_y_np[0]], [own_x_np[len(own_x_np)-1], own_y_np[len(own_y_np)-1]], own_z_np[len(own_z_np)-1]))
 
+        ui.hbox1 = QHBoxLayout()
+        ui.hbox2 = QHBoxLayout()
         ui.hbox = QHBoxLayout()
         ui.vbox = QVBoxLayout()
-        ui.hbox.addWidget(ui.canvas1)
-        ui.hbox.addWidget(ui.canvas2)
+
+        ui.hbox1.addWidget(ui.canvas1)
+        ui.hbox2.addWidget(ui.canvas2)
+        ui.hbox.addLayout(ui.hbox1)
+        ui.hbox.addLayout(ui.hbox2)
         ui.vbox.addLayout(ui.hbox)
         ui.vbox.addWidget(ui.graph_error_texbox)
 
@@ -445,6 +500,29 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
 
     # 2d
     elif len(vars_form) == 1:
+        # check intervals
+        if len(intervals) == 0:
+            smallest_x = float(all_points[0].array[0][0])
+            largest_x = float(all_points[0].array[0][0])
+
+            # set length_between_point_and_interval
+            lbpaih = 50
+            lbpail = 0.02
+
+            for i in all_points:
+                if i.array[0][0] < smallest_x:
+                    smallest_x = float(i.array[0][0])
+                if i.array[0][0] > largest_x:
+                    largest_x = float(i.array[0][0])
+
+            # get lower bound, upper bound for x
+            # get lower bound, upper bound for y
+            middle_x = largest_x - ((largest_x - smallest_x) / 2)
+            lbx = middle_x - ((middle_x - smallest_x) * 2)
+            ubx = middle_x + ((largest_x - middle_x) * 2)
+
+            intervals = [[lbx, ubx]]
+
         # plot1 (3D)
         ui.figure1 = plt.figure()
         ui.canvas1 = FigureCanvas(ui.figure1)
@@ -493,6 +571,8 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
         ui.canvas1.draw()
         ui.canvas2.draw()
 
+        ui.grid_layout.removeItem(ui.hbox1)
+        ui.grid_layout.removeItem(ui.hbox2)
         ui.grid_layout.removeItem(ui.hbox)
         ui.grid_layout.removeItem(ui.vbox)
 
@@ -500,10 +580,15 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
                                            'X interval: %s\n' % (
                                            equation_str, intervals[0]))
 
+        ui.hbox1 = QHBoxLayout()
+        ui.hbox2 = QHBoxLayout()
         ui.hbox = QHBoxLayout()
         ui.vbox = QVBoxLayout()
-        ui.hbox.addWidget(ui.canvas1)
-        ui.hbox.addWidget(ui.canvas2)
+
+        ui.hbox1.addWidget(ui.canvas1)
+        ui.hbox2.addWidget(ui.canvas2)
+        ui.hbox.addLayout(ui.hbox1)
+        ui.hbox.addLayout(ui.hbox2)
         ui.vbox.addLayout(ui.hbox)
         ui.vbox.addWidget(ui.graph_error_texbox)
 

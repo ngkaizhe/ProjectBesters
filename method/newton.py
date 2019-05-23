@@ -6,7 +6,7 @@ from decimal import Decimal
 
 
 ERROR = 0.000001
-MAX_ITERATION = 100000
+MAX_ITERATION = 10000
 
 
 def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
@@ -79,14 +79,14 @@ def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
 
 
 if __name__ == '__main__':
-    print('Q1:')
-    b = 'x^2+x-2*x^0.5'
-    answer1, X = newton(b, ['x'], [7])
-    print(answer1)
-    print(X)
-    # print('Q2:')
-    # b = '7+x^2-3*x*y+3.25*y^2-4y'
-    # answer1, X = newton(b, ['x', 'y'], [1, -1])
+    # print('Q1:')
+    # b = 'x^2+x-2*x^0.5'
+    # answer1, X = newton(b, ['x'], [7])
     # print(answer1)
     # print(X)
+    print('Q2:')
+    b = '7+x^2-3*x*y+3.25*y^2-4y'
+    answer1, X = newton(b, ['x', 'y'], [1, -1])
+    print(answer1)
+    print(X)
     pass

@@ -6,7 +6,7 @@ from decimal import Decimal
 
 
 ERROR = 0.000001
-MAX_ITERATION = 100
+MAX_ITERATION = 10000
 
 
 def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
