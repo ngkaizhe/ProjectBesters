@@ -75,8 +75,8 @@ class UI(QWidget):
         self.create_output_block()
         self.create_graph_block()
 
-        self.setGeometry(170, 300, 1600, 500)
-        self.setMinimumSize(1600, 500)
+        self.setGeometry(170, 100, 1600, 75E0)
+        #self.setMinimumSize(1600, 500)
         self.setWindowTitle('Project2-Optimization')
 
         self.width = self.frameGeometry().width()

@@ -63,7 +63,7 @@ def steep_descent(equation_str: str, vars_form: List[str], initial_point: List[f
         k += 1
 
     answer += ('\n%s=%s' % (vars_form, X[k]))
-    answer += ('f(%s)=%s\n' % (X[k], equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
+    answer += ('f(%s)=%.4f\n' % (X[k], equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
 

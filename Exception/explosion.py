@@ -20,6 +20,8 @@ class Explosion(Enum):
     LENGTH_INTERVAL_INITIAL_POINT_NOT_SAME_AS_INPUT_EQUATION = \
         ValueError('The initial point and interval doesnt have the \
                 same length as the total variables detect in input equation!')
+    EQUATION_EVAL_NORMAL_INVALID_DOMAIN = \
+        ValueError('The parameter of the evaluation is of invalid domain')
 
     def bang(self, msg=""):
         self.value.args = (self.value.args[0] +'\n' +msg,)

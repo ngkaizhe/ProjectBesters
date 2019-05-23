@@ -38,7 +38,8 @@ def conjugate_gradient(equation_str: str, vars_form: List[str], initial_point: L
     list_directions = []
     diff_results = -1
 
-    for k in range(var_count):
+    #for k in range(var_count):
+    while(True):
         # two break situations
         if k != 0:
             if abs(Arrai.norm([list_X[k] - list_X[k - 1]])) < ERROR or \
@@ -81,6 +82,9 @@ def conjugate_gradient(equation_str: str, vars_form: List[str], initial_point: L
         # get the lower bound and upper bound of step_size
         lower_bound, upper_bound = get_lb_ub(interval, list_X[k].transpose()[0], directions.transpose()[0])
         step_size = golden_section(equation, vars_form, lower_bound, upper_bound, list_X[k].transpose()[0], directions.transpose()[0])
+        
+        #Step size is multiplied by 0.5, with increased iterations improves the accuracy
+        step_size *= Decimal(0.5)
 
         list_X.append(list_X[k] + step_size * directions)
 
@@ -90,13 +94,13 @@ def conjugate_gradient(equation_str: str, vars_form: List[str], initial_point: L
         answer += ('k=%s\n' % k)
         answer += ('Si=%s' % directions)
         if (k != 0):
-            answer += ('beta=%s\n' % beta)
-        answer += ('alpha=%s\n' % step_size)
+            answer += ('beta=%.6f\n' % beta)
+        answer += ('alpha=%.6f\n' % step_size)
         answer += ('%s=%s\n' % (vars_form, list_X[k + 1]))
         k += 1
 
     answer += ('\n%s=%s' % (vars_form, list_X[k]))
-    answer += ('f(%s)=%s\n' % (list_X[k], equation.eval_normal_form(build_var_dict(vars_form, list_X[k].transpose()[0]))))
+    answer += ('f(%s)=%.4f\n' % (list_X[k], equation.eval_normal_form(build_var_dict(vars_form, list_X[k].transpose()[0]))))
     return answer, list_X
 
 # return the lower_bound and the upper_bound of the lambda
@@ -139,8 +143,8 @@ def get_lb_ub(interval: List[List[float]], pi: List[float], si: List[float]):
 
 if __name__ == '__main__':
     print('Q1:')
-    equation1_str = '7+x^2-3*x*y+3.25*y^2-4*y'
-    answer1, X1 = conjugate_gradient(equation1_str, ['x', 'y'], [50, 30], [[-50, 70], [-70, 70]])
+    equation1_str = 'x^0.5'
+    answer1, X1 = conjugate_gradient(equation1_str, ['x', 'y'], [50, 30], [[-50,30], [-70, 70]])
     print(answer1)
     print(X1)
 

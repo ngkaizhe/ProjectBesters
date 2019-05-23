@@ -66,7 +66,7 @@ def newton(equation_str: str, vars_form: List[str], initial_point: List[float]):
         X.append(next_x)
         k += 1
 
-    answer += ('\n%s = %sf(%s) = %s' % (vars_form, X[k], X[k], current_equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
+    answer += ('\n%s = %sf(%s) = %.4f' % (vars_form, X[k], X[k], current_equation.eval_normal_form(build_var_dict(vars_form, X[k].transpose()[0]))))
     return answer, X
 
 

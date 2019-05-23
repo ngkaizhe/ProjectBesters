@@ -2,45 +2,85 @@ from math import sqrt
 from Equation import Equation
 from typing import List
 from decimal import Decimal
+from Exception.explosion import Explosion
 
 
-ERROR = 0.0000001
-GOLDEN_RATIO = Decimal(sqrt(5) - 1) / 2
+ERROR = 0.000000000000000001
+GOLDEN_RATIO = 1 - Decimal(sqrt(5) - 1) / 2
 MAX_ITERATION = 100000
 
 
 def golden_section(equation: Equation, vars_form: List[str], 
                    lower_bound: float, upper_bound: float, p: list, vector: list) -> Decimal:
     func = equation.eval_normal_form
-    
-    var_count = len(vars_form)
+
     a = Decimal(lower_bound)
     b = Decimal(upper_bound)
     d = GOLDEN_RATIO * (b - a)
-    x = [a + d, b - d]
+
+    x = (a + d, b - d)
     count_iter = 0
 
-    while abs(x[0] - x[1]) > ERROR and count_iter < MAX_ITERATION:
+    while True:
         f = []
         for i_x in range(2):
-            parameter_list = []
-            for i in range(var_count):
-                parameter_list.append(p[i] + x[i_x] * vector[i])
+            f.append(golden_eval_equation(func, vars_form, x[i_x], p, vector))
 
-            vars_dict = build_var_dict(vars_form, parameter_list)
-            f.append(func(vars_dict))
-
-        if f[0] < f[1]:
-            a = x[1]
+        if not isinstance(f[0], Explosion) and not isinstance(f[1], Explosion):  # Normal case
+            if f[1] < f[0]:
+                a = x[0]
+            else:
+                b = x[1]
 
         else:
-            b = x[0]
+            if isinstance(f[0], Explosion) and isinstance(f[1], Explosion):
+                eval_a = golden_eval_equation(func, vars_form, a, p, vector)
+                eval_b = golden_eval_equation(func, vars_form, b, p, vector)
+                if isinstance(eval_a, Explosion) and isinstance(eval_b, Explosion):
+                    Explosion.EQUATION_EVAL_NORMAL_INVALID_DOMAIN.bang()
+                elif isinstance(eval_a, Explosion):
+                    a = x[1]
+                elif isinstance(eval_b, Explosion):
+                    b = x[0]
+
+            elif isinstance(f[0], Explosion):
+                a = x[0]
+            elif isinstance(f[1], Explosion):
+                b = x[1]
+
+        if (abs(x[0] - x[1]) < ERROR or count_iter >= MAX_ITERATION):
+            if not isinstance(f[0], Explosion) and not isinstance(f[1], Explosion):  # Normal case
+                return x[0]
+
+            else:
+                if isinstance(f[0], Explosion) and isinstance(f[1], Explosion):
+                    if isinstance(eval_a, Explosion):  #eval_a and eval_b should have been evaluated above
+                        return b
+                    elif isinstance(eval_b, Explosion):
+                        return a
+
+                else:
+                    return x[0] if not isinstance(f[0], Explosion) else x[1]
 
         d = GOLDEN_RATIO * (b - a)
-        x = [a + d, b - d]
+        x = (a + d, b - d)
         count_iter += 1
 
-    return x[0]
+
+def golden_eval_equation(func, vars_form, x, p, vector):
+    var_count = len(vars_form)
+    parameter_list = []
+    for i in range(var_count):
+        parameter_list.append(p[i] + x * vector[i])
+
+    vars_dict = build_var_dict(vars_form, parameter_list)
+
+    try:
+        eval_result = func(vars_dict)
+    except:
+        eval_result = Explosion.EQUATION_EVAL_NORMAL_INVALID_DOMAIN
+
+    return eval_result
 
 
 def build_var_dict(vars_form: List[str], vars_value: List[Decimal]):
