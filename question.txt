@@ -1,0 +1,85 @@
+Powell
+Q1:
+equation_str:
+x^2+x-2*x^0.5
+
+method_used_input_textbox:
+initial : [x] = [50]
+interval:
+x = [0, 70]
+
+Q2:
+equation_str:
+sin(3*x)+cos(x)
+
+method_used_input_textbox:
+initial : [x] = [1]
+interval:
+x = [0.3,3]
+
+Q3:
+equation_str:
+7+x^2-3*x*y+3.25*y^2-4*y
+
+method_used_input_textbox:
+initial : [x, y] = [50, 30]
+interval:
+x = [-50, 70]
+y = [-70, 70]
+
+
+Steep Descent
+Q1:
+equation_str:
+x^2+x-2*x^0.5
+
+method_used_input_textbox:
+initial : [x] = [50]
+interval:
+x = [0, 70]
+
+Q2:
+equation_str:
+7+x^2-3*x*y+3.25*y^2-4*y
+
+method_used_input_textbox:
+initial : [x, y] = [50, 30]
+interval:
+x = [-50, 70]
+y = [-70, 70]
+
+
+Newton Method
+Q1:
+equation_str:
+x^2+x-2*x^0.5
+
+method_used_input_textbox:
+initial : [x] = [7]
+
+Q2:
+equation_str:
+7+x^2-3*x*y+3.25*y^2-4*y
+
+method_used_input_textbox:
+initial : [x, y] = [1, -1]
+
+
+Quasi-Newton Method
+Q1:
+equation_str:
+x^2+x-2*x^0.5
+
+method_used_input_textbox:
+initial : [x] = [7]
+
+Q2:
+equation_str:
+7+x^2-3*x*y+3.25*y^2-4*y
+
+method_used_input_textbox:
+initial : [x, y] = [6, 5]
+
+
+
+
