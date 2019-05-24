@@ -117,7 +117,7 @@ def quasi_newton(equation_str: str, vars_form: List[str], initial_point: List[fl
         answer += ('%s: %s\n' % (vars_form, X[i + 1]))
         i += 1
 
-    answer += ('\n%s = %sf(%s) = %.4f' %
+    answer += ('\n%s = %sf(%s) = %.6f' %
                (vars_form, X[i], X[i], current_equation.eval_normal_form(build_var_dict(vars_form, X[i].transpose()[0]))))
     return answer, X
 

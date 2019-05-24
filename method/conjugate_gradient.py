@@ -100,7 +100,7 @@ def conjugate_gradient(equation_str: str, vars_form: List[str], initial_point: L
         k += 1
 
     answer += ('\n%s=%s' % (vars_form, list_X[k]))
-    answer += ('f(%s)=%.4f\n' % (list_X[k], equation.eval_normal_form(build_var_dict(vars_form, list_X[k].transpose()[0]))))
+    answer += ('f(%s)=%.6f\n' % (list_X[k], equation.eval_normal_form(build_var_dict(vars_form, list_X[k].transpose()[0]))))
     return answer, list_X
 
 # return the lower_bound and the upper_bound of the lambda

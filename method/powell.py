@@ -72,7 +72,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
     # answer += ('X Set = {%s}\n\n' % X)
     # build dict
     vars_dict = build_var_dict(vars_form, X[len(X)-1])
-    answer += ('\n%s = %sf(%s)= %.4f\n\n' % (vars_form, Arrai(X[len(X)-1]), Arrai(X[len(X)-1]), equation.eval_normal_form(vars_dict)))
+    answer += ('\n%s = %sf(%s)= %.6f\n\n' % (vars_form, Arrai(X[len(X)-1]), Arrai(X[len(X)-1]), equation.eval_normal_form(vars_dict)))
     return answer, every_point
 
 
