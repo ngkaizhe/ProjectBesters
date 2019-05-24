@@ -48,13 +48,13 @@ def golden_section(equation: Equation, vars_form: List[str],
             elif isinstance(f[1], Explosion):
                 b = x[1]
 
-        if (abs(x[0] - x[1]) < ERROR or count_iter >= MAX_ITERATION):
+        if abs(x[0] - x[1]) < ERROR or count_iter >= MAX_ITERATION:
             if not isinstance(f[0], Explosion) and not isinstance(f[1], Explosion):  # Normal case
                 return x[0]
 
             else:
                 if isinstance(f[0], Explosion) and isinstance(f[1], Explosion):
-                    if isinstance(eval_a, Explosion):  #eval_a and eval_b should have been evaluated above
+                    if isinstance(eval_a, Explosion):  # eval_a and eval_b should have been evaluated above
                         return b
                     elif isinstance(eval_b, Explosion):
                         return a

@@ -24,13 +24,13 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
         if len(i) == 2 is False:
             Explosion.POWELL_LENGTH_INTERVAL_MUST_BE_ONLY_TWO.bang()
 
-    X = Arrai([initial_point])
+    X = Arrai(initial_point)
     every_point = [Arrai(initial_point).transpose()]
     S = Arrai.identity((var_count, var_count))
 
     # build dict
     vars_dict = build_var_dict(vars_form, X[0])
-    answer += ('First loop: f(%s)= %s\n\n' % (X[0], equation.eval_normal_form(vars_dict)))
+    # answer += ('First loop: f(%s)= %s\n\n' % (X[0], equation.eval_normal_form(vars_dict)))
 
     for i in range(MAX_ITERATION):
         # check break situation:
@@ -39,7 +39,7 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
             if Arrai.norm([Arrai(X[i]) - Arrai(X[i - 1])]) < ERROR:
                 break
 
-        P = Arrai([X[i]])
+        P = Arrai(X[i])
         # save the value of alphas
         alphas = Arrai.zeros((1, var_count))
 
@@ -49,8 +49,8 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
             P.insert_row(Arrai(P[j]) + alphas[0][j] * Arrai(S[j]))
 
             vars_dict = build_var_dict(vars_form, P[j + 1])
-            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%s\n\n' %
-                       (i, j, alphas[0][j], P[j + 1], equation.eval_normal_form(vars_dict)))
+            answer += ('i=%s\nj=%s\nalpha=%s\nf(%s)=%.4f\n\n' %
+                       (i, j, alphas[0][j], Arrai(P[j + 1]), equation.eval_normal_form(vars_dict)))
             every_point.append(Arrai(P[j + 1]).transpose())
 
         # The new displacement vector(summation alphas[i]*S[i] from 0 to var_count-1) becomes a new search vector
@@ -69,10 +69,10 @@ def powell(equation_str: str, vars_form: List[str], initial_point: List[float], 
         S.insert_row(sn)
         answer += ('New S{%s}\n\n' % S)
 
-    answer += ('X Set = {%s}\n\n' % X)
+    # answer += ('X Set = {%s}\n\n' % X)
     # build dict
     vars_dict = build_var_dict(vars_form, X[len(X)-1])
-    answer += ('Last loop: f(%s)= %s\n\n' % (X[len(X)-1], equation.eval_normal_form(vars_dict)))
+    answer += ('\n%s = %sf(%s)= %.4f\n\n' % (vars_form, Arrai(X[len(X)-1]), Arrai(X[len(X)-1]), equation.eval_normal_form(vars_dict)))
     return answer, every_point
 
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     print('Q3: 7 + x^2 - 3*x*y + 3.25*y^2 - 4*y')
     answer1, every_point1 = powell(equation_str='7+x^2-3*x*y+3.25*y^2-4*y', vars_form=['x', 'y'], initial_point=[50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     print(answer1)
-    print(every_point1)
+    # print(every_point1)
     # print('Q4: x^2+y^2')
     # answer1, every_point1 = powell(equation_str='x^2+y^2', vars_form=['x', 'y'], initial_point=[-50.0, 30.0], interval=[[-50, 70], [-70, 70]])
     # print(answer1)
