@@ -8,6 +8,13 @@ initial : [x] = [50]
 interval:
 x = [0, 70]
 
+answer:
+['x'] = 
+[[0.3478]]
+f(
+[[0.3478]]
+)= -0.710727
+
 Q2:
 equation_str:
 sin(3*x)+cos(x)
@@ -16,6 +23,14 @@ method_used_input_textbox:
 initial : [x] = [1]
 interval:
 x = [0.3,3]
+
+answer:
+['x'] = 
+[[1.6833]]
+f(
+[[1.6833]]
+)= -1.055848
+
 
 Q3:
 equation_str:
@@ -27,6 +42,14 @@ interval:
 x = [-50, 70]
 y = [-70, 70]
 
+answer:
+['x', 'y'] = 
+[[3.0000  2.0000]]
+f(
+[[3.0000  2.0000]]
+)= 3.000000
+
+
 
 Steep Descent
 Q1:
@@ -36,7 +59,15 @@ x^2+x-2*x^0.5
 method_used_input_textbox:
 initial : [x] = [50]
 interval:
-x = [0, 70]
+x = [-50, 70]
+
+answer:
+['x']=
+[[0.3478]]
+f(
+[[0.3478]]
+)=-0.710727
+
 
 Q2:
 equation_str:
@@ -48,6 +79,16 @@ interval:
 x = [-50, 70]
 y = [-70, 70]
 
+answer:
+['x', 'y']=
+[[3.0000]  
+ [2.0000]]
+f(
+[[3.0000]  
+ [2.0000]]
+)=3.000000
+
+
 
 Newton Method
 Q1:
@@ -57,12 +98,30 @@ x^2+x-2*x^0.5
 method_used_input_textbox:
 initial : [x] = [7]
 
+answer:
+['x'] = 
+[[0.3478]]
+f(
+[[0.3478]]
+) = -0.710727
+
+
 Q2:
 equation_str:
 7+x^2-3*x*y+3.25*y^2-4*y
 
 method_used_input_textbox:
 initial : [x, y] = [1, -1]
+
+answer:
+['x', 'y'] = 
+[[3.0000]  
+ [2.0000]]
+f(
+[[3.0000]  
+ [2.0000]]
+) = 3.000000
+
 
 
 Quasi-Newton Method
@@ -73,12 +132,90 @@ x^2+x-2*x^0.5
 method_used_input_textbox:
 initial : [x] = [7]
 
+answer:
+['x'] = 
+[[0.3478]]
+f(
+[[0.3478]]
+) = -0.710727
+
+
 Q2:
 equation_str:
 7+x^2-3*x*y+3.25*y^2-4*y
 
 method_used_input_textbox:
 initial : [x, y] = [6, 5]
+
+answer:
+['x', 'y'] = 
+[[3.0000]  
+ [2.0000]]
+f(
+[[3.0000]  
+ [2.0000]]
+) = 3.000000
+
+
+
+Conjugate Gradient Method
+Q1:
+equation_str:
+x^2+x-2*x^0.5
+
+method_used_input_textbox:
+initial : [x] = [50]
+interval:
+x = [0, 70]
+
+answer:
+['x']=
+[[0.3482]]
+f(
+[[0.3482]]
+)=-0.710726
+
+
+Q2:
+equation_str:
+7+x^2-3*x*y+3.25*y^2-4*y
+
+method_used_input_textbox:
+initial : [x, y] = [50, 30]
+interval:
+x = [-50, 70]
+y = [-70, 70]
+
+answer:
+['x', 'y']=
+[[3.0010]  
+ [2.0005]]
+f(
+[[3.0010]  
+ [2.0005]]
+)=3.000000
+
+
+Q3:
+equation_str:
+0.001*x^3-0.07*x^2+0.06*x+0.0002*y^3-0.004*y^2+0.02*y
+
+method_used_input_textbox:
+initial : [x, y] = [50, 30]
+interval:
+x = [-50, 70]
+y = [-70, 70]
+
+answer:
+['x', 'y']=
+[[47.2068]  
+ [-70.0000]]
+f(
+[[47.2068]  
+ [-70.0000]]
+)=-137.561820
+
+
 
 
 
