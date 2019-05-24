@@ -216,13 +216,54 @@ class UI(QWidget):
             with open(filename, 'w') as file:
                 file.write(self.output_textbox.toPlainText())
 
-            self.output_textbox.clear()
+        self.output_clear()
 
     def input_clear(self):
         self.input_list.clear()
 
     def output_clear(self):
+        # clear textbox
         self.output_textbox.clear()
+        # clear graph
+        ''' clear windows '''
+        plt.figure(1)
+        plt.clf()
+        plt.figure(2)
+        plt.clf()
+        plt.close('all')
+
+        ''' plot some random stuff '''
+        self.figure1 = plt.figure()
+        self.figure2 = plt.figure()
+        self.canvas1 = FigureCanvas(self.figure1)
+        self.canvas2 = FigureCanvas(self.figure2)
+
+        self.figure1.suptitle('3d')
+        self.figure2.suptitle('2d')
+
+        self.canvas1.draw()
+        self.canvas2.draw()
+
+        self.grid_layout.removeItem(self.hbox1)
+        self.grid_layout.removeItem(self.hbox2)
+        self.grid_layout.removeItem(self.hbox)
+        self.grid_layout.removeItem(self.vbox)
+
+        self.graph_error_texbox.setPlainText('Default graph(NULL)')
+
+        self.hbox1 = QHBoxLayout()
+        self.hbox2 = QHBoxLayout()
+        self.hbox = QHBoxLayout()
+        self.vbox = QVBoxLayout()
+
+        self.hbox1.addWidget(self.canvas1)
+        self.hbox2.addWidget(self.canvas2)
+        self.hbox.addLayout(self.hbox1)
+        self.hbox.addLayout(self.hbox2)
+        self.vbox.addLayout(self.hbox)
+        self.vbox.addWidget(self.graph_error_texbox)
+
+        self.grid_layout.addLayout(self.vbox, 0, 2, 2, 2)
 
     def method_reset(self):
         self.method_intial_interval_textbox.setPlainText('')
