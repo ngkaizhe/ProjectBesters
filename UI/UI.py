@@ -378,9 +378,6 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
             largest_x = float(all_points[0].array[0][0])
             smallest_y = float(all_points[0].array[1][0])
             largest_y = float(all_points[0].array[1][0])
-            # set length_between_point_and_interval
-            lbpaih = 50
-            lbpail = 0.02
 
             for i in all_points:
                 if i.array[0][0] < smallest_x:
@@ -505,10 +502,6 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
             smallest_x = float(all_points[0].array[0][0])
             largest_x = float(all_points[0].array[0][0])
 
-            # set length_between_point_and_interval
-            lbpaih = 50
-            lbpail = 0.02
-
             for i in all_points:
                 if i.array[0][0] < smallest_x:
                     smallest_x = float(i.array[0][0])
@@ -529,8 +522,9 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
         ui.figure1.suptitle('3d')
 
         total_cut = 100.0
-        marker_size = 0.5
+        marker_size = 3
 
+        # plot2 (2d)
         # draw our result
         own_x_list = []
         for i in all_points:
@@ -544,7 +538,6 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
             own_y_list.append(float(ans))
         own_y_np = np.array(own_y_list)
 
-        # plot2 (2d)
         ui.figure2 = plt.figure()
         ui.canvas2 = FigureCanvas(ui.figure2)
         ui.figure2.suptitle('2d')
@@ -576,9 +569,11 @@ def draw_graph(ui: UI, equation_str: str, vars_form: List[str], all_points: List
         ui.grid_layout.removeItem(ui.hbox)
         ui.grid_layout.removeItem(ui.vbox)
 
-        ui.graph_error_texbox.setPlainText('Graph built successfull!\n Current Equation: %s\n'
-                                           'X interval: %s\n' % (
-                                           equation_str, intervals[0]))
+        ui.graph_error_texbox.setPlainText('Current Equation: %s\n'
+                                           'X interval: %s\n'
+                                           'Initial point:%s\nMinimum point:%s\n'
+                                           'Minimum value:%s\n' %
+                                           (equation_str, intervals[0], [own_x_np[0]], [own_x_np[len(own_x_np)-1]], own_y_np[len(own_y_np)-1]))
 
         ui.hbox1 = QHBoxLayout()
         ui.hbox2 = QHBoxLayout()
