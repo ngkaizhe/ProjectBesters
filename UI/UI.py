@@ -215,8 +215,7 @@ class UI(QWidget):
         if filename:
             with open(filename, 'w') as file:
                 file.write(self.output_textbox.toPlainText())
-
-        self.output_clear()
+            self.output_clear()
 
     def input_clear(self):
         self.input_list.clear()
